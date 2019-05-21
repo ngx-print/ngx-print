@@ -3,7 +3,8 @@ import { Directive, HostListener, Input } from "@angular/core";
   selector: "button[ngxPrint]"
 })
 export class NgxPrintDirective {
-  private _printStyle = [];
+
+  public _printStyle = [];
 
   /**
    *
@@ -33,11 +34,9 @@ export class NgxPrintDirective {
    */
   @Input()
   set printStyle(values: { [key: string]: { [key: string]: string } }) {
-    for (var key in values) {
+    for (let key in values) {
       if (values.hasOwnProperty(key)) {
-        this._printStyle.push(
-          (key + JSON.stringify(values[key])).replace(/['"]+/g, "")
-        );
+      this._printStyle.push((key + JSON.stringify(values[key])).replace(/['"]+/g, ''));
       }
     }
     this.returnStyleValues();
@@ -53,8 +52,8 @@ export class NgxPrintDirective {
  *
  * @memberof NgxPrintDirective
  */
-private returnStyleValues() {
-  return '<style>' + this._printStyle.join(' ').replace(',',';') + '</style>';
+public returnStyleValues() {
+  return `<style> ${this._printStyle.join(' ').replace(/,/g,';')} </style>`;
   }
 
   /**
@@ -109,7 +108,7 @@ private returnStyleValues() {
    */
   @HostListener('click')
   public print(): void {
-    let printContents, popupWin, styles, links;
+    let printContents, popupWin, styles = '', links = '';
 
     if(this.useExistingCss) {
       styles = this.getElementTag('style');
@@ -123,6 +122,7 @@ private returnStyleValues() {
       <html>
         <head>
           <title>${this.printTitle ? this.printTitle : ""}</title>
+          ${this.returnStyleValues()}
           ${this.returnStyleSheetLinkTags()}
           ${styles}
           ${links}
