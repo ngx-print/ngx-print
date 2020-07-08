@@ -128,6 +128,23 @@ Here some simple styles were added to every `h1` & `h2` tags within the `div` wh
   ngxPrint>print</button>
 
 ```
+- If you want to customize the printing window with additional scripts (JS) by importing the js provided in assets/js or in a cdn use `javascriptFile`:
+
+
+```html
+
+<div  id="print-section">
+
+<!-- ... -->
+
+</div>
+
+<button
+  javascriptFile="assets/js/custom1.js,assets/js/custom2.js"
+  printSectionId="print-section"
+  ngxPrint>print</button>
+
+```
 ## Contributors :1st_place_medal: 
 
 Huge thanks to: [deeplotia](https://github.com/deeplotia) , [Ben L](https://github.com/broem) , [Gavyn McKenzie](https://github.com/gavmck) , [silenceway](https://github.com/silenceway), [Muhammad Ahsan Ayaz](https://github.com/AhsanAyaz) and to all  `ngx-print` users 

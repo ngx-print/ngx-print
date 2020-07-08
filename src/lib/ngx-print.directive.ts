@@ -73,6 +73,15 @@ public returnStyleValues() {
   private _styleSheetFile = '';
 
   /**
+   *
+   *
+   * @returns html for the given tag
+   *
+   * @memberof NgxPrintDirective
+   */
+  private _javascriptFile = '';
+
+  /**
    * @memberof NgxPrintDirective
    * @param cssList
    */
@@ -92,6 +101,25 @@ public returnStyleValues() {
   }
 
   /**
+   * @memberof NgxPrintDirective
+   * @param jsList
+   */
+  @Input()
+  set javascriptFile(jsList: string) {
+    let linkTagFn = function(jsFileName) {
+      return `<script src="${jsFileName}">`;
+    }
+    if (jsList.indexOf(',') !== -1) {
+      const valueArr = jsList.split(',');
+      for (let val of valueArr) {
+        this._javascriptFile = this._javascriptFile + linkTagFn(val);
+      }
+    } else {
+      this._javascriptFile = linkTagFn(jsList);
+    }
+  }
+
+  /**
    * @returns string which contains the link tags containing the css which will
    * be injected later within <head></head> tag.
    *
@@ -99,6 +127,16 @@ public returnStyleValues() {
   private returnStyleSheetLinkTags() {
     return this._styleSheetFile;
   }
+
+  /**
+   * @returns string which contains the script tags containing the js which will
+   * be injected later within <head></head> tag.
+   *
+   */
+  private returnJavascriptLinkTags() {
+    return this._javascriptFile;
+  }
+
   private getElementTag(tag: keyof HTMLElementTagNameMap): string {
     const html: string[] = [];
     const elements = document.getElementsByTagName(tag);
@@ -144,6 +182,7 @@ public returnStyleValues() {
           <title>${this.printTitle ? this.printTitle : ""}</title>
           ${this.returnStyleValues()}
           ${this.returnStyleSheetLinkTags()}
+          ${this.returnJavascriptLinkTags()}
           ${styles}
           ${links}
         </head>
