@@ -128,7 +128,7 @@ Here some simple styles were added to every `h1` & `h2` tags within the `div` wh
   ngxPrint>print</button>
 
 ```
-- If you want to customize the printing window with additional scripts (JS) by importing the js provided in assets/js or in a cdn use `javascriptFile`:
+If you want to customize the printing window with additional scripts (JS) by importing the js provided in assets/js or in a cdn use `javascriptFile`:
 
 
 ```html
