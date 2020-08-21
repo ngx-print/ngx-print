@@ -25,7 +25,8 @@
   "scripts": {
     "ng": "ng",
     "build": "ng build",
-    "test": "ng test -- --no-watch --code-coverage --no-progress --browsers=ChromeHeadlessCI"
+    "test": "ng test -- --no-watch --code-coverage --no-progress --browsers=ChromeHeadlessCI",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "tslib": "^1.9.3"
