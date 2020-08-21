@@ -1,0 +1,71 @@
+{
+  "name": "ngx-print",
+  "version": "1.2.0-beta.4",
+  "description": "Plug n' Play Angular (2++) directive to print your stuff",
+  "author": "https://github.com/selemxmn/ngx-print/graphs/contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/selemxmn/ngx-print.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/selemxmn/ngx-print/issues"
+  },
+  "homepage": "https://github.com/selemxmn/ngx-print#readme",
+  "keywords": [
+    "print",
+    "angular",
+    "library",
+    "ng-print",
+    "ngx-print",
+    "directive",
+    "dependency",
+    "angular-print"
+  ],
+  "dependencies": {
+    "tslib": "^1.9.3"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^0.11.1",
+    "@angular-devkit/build-ng-packagr": "^0.11.0",
+    "@angular/cli": "^7.1.0",
+    "@angular/common": "^7.1.3",
+    "@angular/compiler": "^7.1.1",
+    "@angular/compiler-cli": "^7.1.1",
+    "@angular/core": "^7.1.1",
+    "@angular/platform-browser": "^7.1.3",
+    "@angular/platform-browser-dynamic": "^7.1.1",
+    "@types/jasmine": "^3.3.1",
+    "@types/node": "^10.12.12",
+    "codelyzer": "^4.5.0",
+    "coveralls": "^3.0.2",
+    "jasmine-core": "^3.3.0",
+    "jasmine-spec-reporter": "^4.2.1",
+    "karma": "^3.1.3",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-coverage-istanbul-reporter": "^2.0.4",
+    "karma-jasmine": "^2.0.1",
+    "karma-jasmine-html-reporter": "^1.4.0",
+    "nyc": "^14.1.1",
+    "ng-packagr": "^4.4.0",
+    "rxjs": "^6.3.3",
+    "ts-node": "^7.0.1",
+    "tsickle": "^0.34.0",
+    "typescript": "3.2.4",
+    "zone.js": "^0.8.26"
+  },
+  "peerDependencies": {
+    "@angular/common": "*",
+    "@angular/core": "*"
+  },
+  "main": "bundles/ngx-print.umd.js",
+  "module": "fesm5/ngx-print.js",
+  "es2015": "fesm2015/ngx-print.js",
+  "esm5": "esm5/ngx-print.js",
+  "esm2015": "esm2015/ngx-print.js",
+  "fesm5": "fesm5/ngx-print.js",
+  "fesm2015": "fesm2015/ngx-print.js",
+  "typings": "ngx-print.d.ts",
+  "metadata": "ngx-print.metadata.json",
+  "sideEffects": false
+}
