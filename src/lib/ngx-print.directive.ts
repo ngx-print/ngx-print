@@ -25,6 +25,13 @@ export class NgxPrintDirective {
    *
    * @memberof NgxPrintDirective
    */
+   @Input() previewOnly: boolean = false;
+
+  /**
+   *
+   *
+   * @memberof NgxPrintDirective
+   */
   @Input() useExistingCss = false;
 
   /**
@@ -170,9 +177,9 @@ public returnStyleValues() {
           <script defer>
             function triggerPrint(event) {
               window.removeEventListener('load', triggerPrint, false);
-              setTimeout(function() {
+              ${this.previewOnly ? '' : `setTimeout(function() {
                 closeWindow(window.print());
-              }, ${this.printDelay});
+              }, ${this.printDelay});`}
             }
             function closeWindow(){
                 window.close();
