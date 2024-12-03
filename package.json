@@ -1,6 +1,6 @@
 {
   "name": "ngx-print",
-  "version": "1.5.1",
+  "version": "2.0.0",
   "description": "Plug n' Play Angular (2++) directive to print your stuff",
   "author": "https://github.com/selemxmn/ngx-print/graphs/contributors",
   "repository": {
