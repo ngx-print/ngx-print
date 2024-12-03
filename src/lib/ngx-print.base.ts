@@ -56,7 +56,7 @@ export class PrintBase {
      * @protected
      */
     protected setStyleSheetFile(cssList: string) {
-        let linkTagFn = function (cssFileName) {
+        let linkTagFn = function (cssFileName: string) {
             return `<link rel="stylesheet" type="text/css" href="${cssFileName}">`;
         };
 

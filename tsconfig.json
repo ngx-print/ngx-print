@@ -10,21 +10,14 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "target": "ES2022",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-    "lib": [
-      "ES2022",
-      "dom"
-    ],
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["node_modules/@types"],
+    "lib": ["ES2022", "dom"],
     "paths": {
-      "ngx-print": [
-        "dist/ngx-print"
-      ],
-      "ngx-print/*": [
-        "dist/ngx-print/*"
-      ]
-    },
+      "ngx-print": ["dist/ngx-print"],
+      "ngx-print/*": ["dist/ngx-print/*"]
+    }
   },
   "angularCompilerOptions": {
     "compilationMode": "partial"

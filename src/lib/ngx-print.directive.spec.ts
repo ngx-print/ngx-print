@@ -107,11 +107,20 @@ describe('NgxPrintDirective', () => {
     expect(window.open).toHaveBeenCalled();
   });
 
-  it(`should apply class list to body element in new window`, () => {
+  it('should apply class list to body element in new window', () => {
     const windowOpenSpy = spyOn(window, 'open').and.callThrough();
-    // simulate click
+  
+    // Simulate click
     buttonEl.triggerEventHandler('click', {});
-    expect(windowOpenSpy.calls.mostRecent().returnValue.document.body.classList.contains('theme-dark')).toBeTrue();
+  
+    const newWindow = windowOpenSpy.calls.mostRecent().returnValue;
+  
+    // Ensure newWindow is not null before accessing properties
+    if (newWindow && newWindow.document && newWindow.document.body) {
+      expect(newWindow.document.body.classList.contains('theme-dark')).toBeTrue();
+    } else {
+      fail('Window was not opened or document/body is not accessible.');
+    }
   });
-
+  
 });
