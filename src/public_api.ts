@@ -1,7 +1,7 @@
 /*
  * Public API Surface of ngx-print
  */
-export * from './lib/ngx-print.service';
-export * from './lib/ngx-print.directive';
-export * from './lib/ngx-print.module';
-export * from './lib/print-options';
+export { NgxPrintService } from './lib/ngx-print.service';
+export { NgxPrintDirective} from './lib/ngx-print.directive';
+export { NgxPrintModule } from './lib/ngx-print.module';
+export { PrintOptions } from './lib/print-options';

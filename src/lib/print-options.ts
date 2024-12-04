@@ -1,6 +1,6 @@
 export class PrintOptions {
-  printSectionId: string = null;
-  printTitle: string = null;
+  printSectionId: string = '';
+  printTitle: string = '';
   useExistingCss: boolean = false;
   bodyClass: string = '';
   openNewTab: boolean = false;
