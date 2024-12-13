@@ -233,7 +233,7 @@ export class PrintBase {
             </head>
             <body ${printOptions.bodyClass ? `class="${printOptions.bodyClass}"` : ''}>
               ${printContents}
-              <script defer>
+              <script ${this.nonce ? `nonce=${this.nonce}` : ''} defer>
                 function triggerPrint(event) {
                   window.removeEventListener('load', triggerPrint, false);
                   ${printOptions.previewOnly ? '' : `setTimeout(function() {
