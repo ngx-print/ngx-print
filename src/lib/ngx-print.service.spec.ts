@@ -7,7 +7,7 @@ import { PrintOptions } from './print-options';
 const testNonce = 'dummy-nonce-value';
 
 @Component({
-  template: `
+    template: `
   <div id="print-section">
     <h1>
       Welcome to ngx-print
@@ -36,7 +36,8 @@ const testNonce = 'dummy-nonce-value';
       </tr>
     </table>
   </div>
-  `
+  `,
+    standalone: false
 })
 class TestNgxPrintServiceComponent {
   constructor(private printService: NgxPrintService) { }

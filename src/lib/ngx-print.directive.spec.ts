@@ -5,7 +5,7 @@ import { By } from "@angular/platform-browser";
 import { NgxPrintDirective } from './ngx-print.directive';
 
 @Component({
-  template: `
+    template: `
   <div id="print-section">
     <h1>
       Welcome to ngx-print
@@ -35,7 +35,8 @@ import { NgxPrintDirective } from './ngx-print.directive';
     </table>
   </div>
   <button printSectionId="print-section" ngxPrint bodyClass="theme-dark"></button>
-  `
+  `,
+    standalone: false
 })
 class TestNgxPrintComponent {
 }
