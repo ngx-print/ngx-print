@@ -11,6 +11,7 @@ This directive makes printing your HTML sections smooth and easy in your Angular
 | 1.4.x        | 16.0.0       |
 | 1.5.x		     | 17.0.0		    |
 | 2.x.x		     | 18.0.0		    |
+| 3.x.x		     | 19.0.0		    |
 
 ### Note
 The versioning strategy has been updated from incrementing minor versions (1.5.x) to using major versions (2.x.x). This change ensures that npm update will no longer automatically upgrade to an unsupported Angular version. Previously, this was overlooked, leading to potential compatibility issues. Starting with version 2.x.x, we are addressing this oversight to ensure better version management going forward.
