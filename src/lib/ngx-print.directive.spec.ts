@@ -37,7 +37,7 @@ import { NgxPrintDirective } from './ngx-print.directive';
     </div>
     <button printSectionId="print-section" ngxPrint bodyClass="theme-dark"></button>
   `,
-  standalone: false,
+  imports: [NgxPrintDirective],
 })
 class TestNgxPrintComponent {}
 
@@ -55,8 +55,7 @@ describe('NgxPrintDirective', () => {
   beforeEach(() => {
     // Configure a NgModule-like decorator metadata
     TestBed.configureTestingModule({
-      declarations: [TestNgxPrintComponent],
-      imports: [NgxPrintDirective],
+      imports: [TestNgxPrintComponent],
     });
 
     // Create a fixture object (that is going to allows us to create an instance of that component)

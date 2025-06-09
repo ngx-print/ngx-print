@@ -38,7 +38,6 @@ const testNonce = 'dummy-nonce-value';
       </table>
     </div>
   `,
-  standalone: false,
 })
 class TestNgxPrintServiceComponent {
   constructor(private printService: NgxPrintService) {}
@@ -60,7 +59,7 @@ describe('NgxPrintService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [TestNgxPrintServiceComponent],
+      imports: [TestNgxPrintServiceComponent],
       providers: [{ provide: CSP_NONCE, useValue: testNonce }, NgxPrintService],
     });
     service = TestBed.inject(NgxPrintService);
