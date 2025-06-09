@@ -220,36 +220,63 @@ export class PrintBase {
     }
 
     popupWin.document.open();
-    popupWin.document.write(`
-          <html>
-            <head>
-              <title>${printOptions.printTitle ? printOptions.printTitle : ''}</title>
-              ${baseTag}
-              ${this.returnStyleValues()}
-              ${this.returnStyleSheetLinkTags()}
-              ${styles}
-              ${links}
-            </head>
-            <body ${printOptions.bodyClass ? `class="${printOptions.bodyClass}"` : ''}>
-              ${printContents}
-              <script defer>
-                function triggerPrint(event) {
-                  window.removeEventListener('load', triggerPrint, false);
-                  ${
-                    printOptions.previewOnly
-                      ? ''
-                      : `setTimeout(function() {
-                    closeWindow(window.print());
-                  }, ${printOptions.printDelay});`
-                  }
-                }
-                function closeWindow(){
-                  ${printOptions.closeWindow ? 'window.close();' : ''}
-                }
-                window.addEventListener('load', triggerPrint, false);
-              </script>
-            </body>
-          </html>`);
+
+    // Create the HTML structure
+    const doc = popupWin.document;
+
+    // Set up the basic HTML structure
+    const html = doc.createElement('html');
+    const head = doc.createElement('head');
+    const body = doc.createElement('body');
+
+    // Set title
+    const title = doc.createElement('title');
+    title.textContent = printOptions.printTitle || '';
+    head.appendChild(title);
+
+    // Add base tag, styles, and links
+    if (baseTag) {
+      head.innerHTML += baseTag;
+    }
+    head.innerHTML += this.returnStyleValues();
+    head.innerHTML += this.returnStyleSheetLinkTags();
+    head.innerHTML += styles;
+    head.innerHTML += links;
+
+    // Set body class if provided
+    if (printOptions.bodyClass) {
+      body.className = printOptions.bodyClass;
+    }
+
+    // Insert print contents
+    body.innerHTML += printContents;
+
+    // Add script
+    const script = doc.createElement('script');
+    script.defer = true;
+    script.textContent = `
+  function triggerPrint(event) {
+    window.removeEventListener('load', triggerPrint, false);
+    ${
+      printOptions.previewOnly
+        ? ''
+        : `setTimeout(function() {
+      closeWindow(window.print());
+    }, ${printOptions.printDelay});`
+    }
+  }
+  function closeWindow(){
+    ${printOptions.closeWindow ? 'window.close();' : ''}
+  }
+  window.addEventListener('load', triggerPrint, false);
+`;
+    body.appendChild(script);
+
+    // Assemble the document
+    html.appendChild(head);
+    html.appendChild(body);
+    doc.appendChild(html);
+
     popupWin.document.close();
   }
 }
