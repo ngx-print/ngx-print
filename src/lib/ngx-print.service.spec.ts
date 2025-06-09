@@ -7,40 +7,41 @@ import { PrintOptions } from './print-options';
 const testNonce = 'dummy-nonce-value';
 
 @Component({
-    template: `
-  <div id="print-section">
-    <h1>
-      Welcome to ngx-print
-    </h1>
-    <img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-    <h2>Here are some links to help you start: </h2>
-    <ul >
-      <li>
-        <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-      </li>
-      <li>
-        <h2><a target="_blank" rel="noopener" href="https://github.com/angular/angular-cli/wiki">CLI Documentation</a></h2>
-      </li>
-      <li>
-        <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-      </li>
-    </ul>
-    <table border="1">
-      <tr>
-        <td>Row 1, Column 1</td>
-        <td>Row 1, Column 2</td>
-      </tr>
-      <tr>
-        <td>Row 2, Column 1</td>
-        <td>Row 2, Column 2</td>
-      </tr>
-    </table>
-  </div>
+  template: `
+    <div id="print-section">
+      <h1>Welcome to ngx-print</h1>
+      <img
+        width="300"
+        alt="Angular Logo"
+        src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==" />
+      <h2>Here are some links to help you start:</h2>
+      <ul>
+        <li>
+          <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
+        </li>
+        <li>
+          <h2><a target="_blank" rel="noopener" href="https://github.com/angular/angular-cli/wiki">CLI Documentation</a></h2>
+        </li>
+        <li>
+          <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
+        </li>
+      </ul>
+      <table border="1">
+        <tr>
+          <td>Row 1, Column 1</td>
+          <td>Row 1, Column 2</td>
+        </tr>
+        <tr>
+          <td>Row 2, Column 1</td>
+          <td>Row 2, Column 2</td>
+        </tr>
+      </table>
+    </div>
   `,
-    standalone: false
+  standalone: false,
 })
 class TestNgxPrintServiceComponent {
-  constructor(private printService: NgxPrintService) { }
+  constructor(private printService: NgxPrintService) {}
 
   printMe(printOptions: PrintOptions) {
     this.printService.print(printOptions);
@@ -52,16 +53,15 @@ describe('NgxPrintService', () => {
   let component: TestNgxPrintServiceComponent;
   let fixture: ComponentFixture<TestNgxPrintServiceComponent>;
 
-  let styleSheet: { [key: string]: { [key: string]: string } }
-    = {
+  const styleSheet: { [key: string]: { [key: string]: string } } = {
     'h2': { 'border': 'solid 1px' },
-    'h1': { 'color': 'red', 'border': '1px solid' }
+    'h1': { 'color': 'red', 'border': '1px solid' },
   };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [TestNgxPrintServiceComponent],
-      providers: [{ provide: CSP_NONCE, useValue: testNonce }, NgxPrintService]
+      providers: [{ provide: CSP_NONCE, useValue: testNonce }, NgxPrintService],
     });
     service = TestBed.inject(NgxPrintService);
     // Create a fixture object (that is going to allows us to create an instance of that component)
@@ -79,7 +79,7 @@ describe('NgxPrintService', () => {
     spyOn(service, 'print');
 
     const customPrintOptions: PrintOptions = new PrintOptions({
-      printSectionId: 'print-section'
+      printSectionId: 'print-section',
     });
 
     component.printMe(customPrintOptions);
@@ -92,7 +92,7 @@ describe('NgxPrintService', () => {
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
-      printTitle: "Test Title"
+      printTitle: 'Test Title',
     });
 
     component.printMe(customPrintOptions);
@@ -105,7 +105,7 @@ describe('NgxPrintService', () => {
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
-      useExistingCss: true
+      useExistingCss: true,
     });
 
     component.printMe(customPrintOptions);
@@ -118,7 +118,7 @@ describe('NgxPrintService', () => {
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
-      printDelay: 2000
+      printDelay: 2000,
     });
 
     component.printMe(customPrintOptions);
@@ -131,7 +131,7 @@ describe('NgxPrintService', () => {
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
-      previewOnly: true
+      previewOnly: true,
     });
 
     component.printMe(customPrintOptions);
@@ -144,7 +144,7 @@ describe('NgxPrintService', () => {
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
-      closeWindow: false
+      closeWindow: false,
     });
 
     component.printMe(customPrintOptions);
@@ -157,7 +157,7 @@ describe('NgxPrintService', () => {
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
-      openNewTab: true
+      openNewTab: true,
     });
 
     component.printMe(customPrintOptions);
@@ -166,7 +166,6 @@ describe('NgxPrintService', () => {
   });
 
   it('should test the printStyle', () => {
-
     // Create a spy on the instance's method
     spyOn(service, 'returnStyleValues').and.callThrough();
 
@@ -176,7 +175,6 @@ describe('NgxPrintService', () => {
     // Check if returnStyleValues has been called
     expect(service.returnStyleValues).toHaveBeenCalled();
   });
-
 
   it('should return a string from array of objects', () => {
     service.printStyle = styleSheet;

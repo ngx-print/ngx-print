@@ -1,8 +1,8 @@
-import { Directive, HostListener, Input } from "@angular/core";
-import { PrintBase } from "./ngx-print.base";
-import { PrintOptions } from "./print-options";
+import { Directive, HostListener, Input } from '@angular/core';
+import { PrintBase } from './ngx-print.base';
+import { PrintOptions } from './print-options';
 @Directive({
-  selector: "[ngxPrint]",
+  selector: '[ngxPrint]',
   standalone: true,
 })
 export class NgxPrintDirective extends PrintBase {
@@ -100,7 +100,7 @@ export class NgxPrintDirective extends PrintBase {
    *
    * @memberof NgxPrintDirective
    */
-  @HostListener("click")
+  @HostListener('click')
   public print(): void {
     super.print(this.printOptions);
   }
