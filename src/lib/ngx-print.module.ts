@@ -3,6 +3,6 @@ import { NgxPrintDirective } from './ngx-print.directive';
 
 @NgModule({
   imports: [NgxPrintDirective],
-  exports: [NgxPrintDirective]
+  exports: [NgxPrintDirective],
 })
-export class NgxPrintModule { }
+export class NgxPrintModule {}

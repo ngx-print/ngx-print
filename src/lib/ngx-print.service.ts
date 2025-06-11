@@ -1,6 +1,6 @@
-import { Injectable } from "@angular/core";
-import { PrintBase } from "./ngx-print.base";
-import { PrintOptions } from "./print-options";
+import { Injectable } from '@angular/core';
+import { PrintBase } from './ngx-print.base';
+import { PrintOptions } from './print-options';
 
 /**
  * Service for handling printing functionality in Angular applications.
@@ -11,10 +11,9 @@ import { PrintOptions } from "./print-options";
  * @extends {PrintBase}
  */
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
 export class NgxPrintService extends PrintBase {
-
   /**
    * Initiates the printing process using the provided print options.
    *
@@ -37,7 +36,6 @@ export class NgxPrintService extends PrintBase {
   set printStyle(values: { [key: string]: { [key: string]: string } }) {
     super.setPrintStyle(values);
   }
-
 
   /**
    * Sets the stylesheet file for the printing process.
