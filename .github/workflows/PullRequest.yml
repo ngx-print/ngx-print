@@ -3,7 +3,7 @@ name: Pull Request Checker
 on:
   pull_request:
     branches:
-      - master
+      - main
 
 concurrency:
   group: ${{github.repository_id}}-${{ github.workflow }}-${{ github.ref }}
