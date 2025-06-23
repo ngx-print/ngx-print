@@ -14,6 +14,7 @@ import { PrintOptions } from './print-options';
   providedIn: 'root',
 })
 export class NgxPrintService extends PrintBase {
+  printComplete$ = this.printComplete.asObservable();
   /**
    * Initiates the printing process using the provided print options.
    *

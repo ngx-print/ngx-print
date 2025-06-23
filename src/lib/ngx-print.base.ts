@@ -1,5 +1,6 @@
 import { CSP_NONCE, Inject, Injectable, Optional } from '@angular/core';
 import { PrintOptions } from './print-options';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -7,6 +8,7 @@ import { PrintOptions } from './print-options';
 export class PrintBase {
   private _printStyle: string[] = [];
   private _styleSheetFile: string = '';
+  protected printComplete = new Subject<void>();
 
   constructor(@Inject(CSP_NONCE) @Optional() private nonce?: string | null) {}
 
@@ -181,6 +183,10 @@ export class PrintBase {
   }
   //#endregion
 
+  protected notifyPrintComplete() {
+    this.printComplete.next();
+  }
+
   /**
    * Prints the specified content using the provided print options.
    *
@@ -260,21 +266,27 @@ export class PrintBase {
     }
 
     script.textContent = `
-  function triggerPrint(event) {
-    window.removeEventListener('load', triggerPrint, false);
-    ${
-      printOptions.previewOnly
-        ? ''
-        : `setTimeout(function() {
-      closeWindow(window.print());
-    }, ${printOptions.printDelay});`
-    }
-  }
-  function closeWindow(){
-    ${printOptions.closeWindow ? 'window.close();' : ''}
-  }
-  window.addEventListener('load', triggerPrint, false);
-`;
+      function triggerPrint(event) {
+        window.removeEventListener('load', triggerPrint, false);
+        ${
+          printOptions.previewOnly
+            ? ''
+            : `setTimeout(function() {
+          closeWindow(window.print());
+        }, ${printOptions.printDelay});`
+        }
+      }
+      function closeWindow(){
+        ${printOptions.closeWindow ? 'window.close();' : ''}
+      }
+      window.addEventListener('load', triggerPrint, false);
+      window.addEventListener('afterprint', function () {
+        if (window.opener) {
+          window.opener.postMessage({ type: 'print-complete' }, '*');
+        }
+        closeWindow();
+      }, { once: true });
+    `;
     body.appendChild(script);
 
     // Assemble the document
@@ -283,5 +295,14 @@ export class PrintBase {
     doc.appendChild(html);
 
     popupWin.document.close();
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'print-complete') {
+        // Notify of print completion
+        this.notifyPrintComplete();
+        window.removeEventListener('message', handleMessage);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
   }
 }
