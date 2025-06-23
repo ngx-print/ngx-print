@@ -118,4 +118,22 @@ describe('NgxPrintDirective', () => {
       fail('Window was not opened or document/body is not accessible.');
     }
   });
+
+  it('should emit printComplete when printing finishes', done => {
+    let emitted = false;
+
+    const directive = buttonEl.injector.get(NgxPrintDirective);
+
+    directive.printCompleted.subscribe(() => {
+      emitted = true;
+      expect(emitted).toBeTrue();
+      done();
+    });
+
+    // Trigger the print
+    buttonEl.triggerEventHandler('click', null);
+
+    // Simulate popup posting "print-complete" message back to opener
+    window.dispatchEvent(new MessageEvent('message', { data: { type: 'print-complete' } }));
+  });
 });

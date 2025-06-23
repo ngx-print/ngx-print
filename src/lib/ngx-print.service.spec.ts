@@ -194,5 +194,8 @@ describe('NgxPrintService', () => {
     });
 
     component.printMe(customPrintOptions);
+
+    // Simulate the popup sending the print complete message
+    window.dispatchEvent(new MessageEvent('message', { data: { type: 'print-complete' } }));
   });
 });
