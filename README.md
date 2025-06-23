@@ -202,6 +202,17 @@ Here some simple styles were added to every `h1` & `h2` tags within the `div` wh
 	ngxPrint>print</button>
 ```
 
+- To run a function after printing completes, subscribe to the `printCompleted` event. Please note it is impossible to differentiate between the Cancel or Print buttong being clicked on the print window. This event will fire regardless of which button was clicked:
+
+```html
+<button
+  (printCompleted)="onPrintComplete()"
+  printSectionId="print-section"
+  ngxPrint>
+  print
+</button>
+```
+
 ## Using NgxPrint as a service (v1.5+)
 Inject the NgxPrintService in the constructor of your component or service:
 
@@ -242,6 +253,13 @@ this.printService.printStyle = styleSheet;
 
 // Optional property for a css file location
 this.printService.styleSheetFile = fileLocation;
+```
+
+### Subscribing to print event
+```typescript
+ this.printService.printComplete$.pipe(take(1)).subscribe(() => {
+   console.log('Print completed!');
+ });
 ```
 
 ## Content-Security-Policy (CSP) Support
