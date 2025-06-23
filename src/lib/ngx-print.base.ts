@@ -254,6 +254,11 @@ export class PrintBase {
     // Add script
     const script = doc.createElement('script');
     script.defer = true;
+
+    if (this.nonce) {
+      script.setAttribute('nonce', this.nonce);
+    }
+
     script.textContent = `
   function triggerPrint(event) {
     window.removeEventListener('load', triggerPrint, false);
