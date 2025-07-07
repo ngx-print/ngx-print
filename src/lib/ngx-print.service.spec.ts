@@ -181,4 +181,21 @@ describe('NgxPrintService', () => {
     // Ensure the print styles are correctly formatted in the document
     expect(service.returnStyleValues()).toEqual('<style nonce="' + testNonce + '"> h2{border:solid 1px} h1{color:red;border:1px solid} </style>');
   });
+
+  it('should emit on print completion (void)', done => {
+    // Subscribe to the observable
+    service.printComplete$.subscribe(() => {
+      expect(true).toBeTrue(); // Just ensure it emits
+      done();
+    });
+
+    const customPrintOptions: PrintOptions = new PrintOptions({
+      printSectionId: 'print-section',
+    });
+
+    component.printMe(customPrintOptions);
+
+    // Simulate the popup sending the print complete message
+    window.dispatchEvent(new MessageEvent('message', { data: { type: 'print-complete' } }));
+  });
 });

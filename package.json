@@ -1,6 +1,6 @@
 {
   "name": "ngx-print",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Plug n' Play Angular (2++) directive to print your stuff",
   "author": "https://github.com/selemxmn/ngx-print/graphs/contributors",
   "repository": {
@@ -36,18 +36,18 @@
     "@angular-eslint/schematics": "19.7.0",
     "@angular-eslint/template-parser": "19.7.0",
     "@angular/cli": "^19.2.14",
-    "@angular/compiler": "^19.2.14",
-    "@angular/core": "^19.2.14",
     "@angular/common": "^19.2.14",
+    "@angular/compiler": "^19.2.14",
     "@angular/compiler-cli": "^19.2.14",
+    "@angular/core": "^19.2.14",
     "@angular/platform-browser": "19.2.14",
     "@angular/platform-browser-dynamic": "19.2.14",
     "@types/jasmine": "~5.1.4",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
+    "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.4.1",
-    "@typescript-eslint/eslint-plugin": "^8.33.0",
-    "@typescript-eslint/parser": "^8.0.0",
     "jasmine-core": "~5.7.1",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -58,5 +58,8 @@
     "prettier": "^3.3.3",
     "prettier-eslint": "^16.3.0",
     "typescript": "~5.8.2"
+  },
+  "peerDependencies": {
+    "rxjs": "^7.4.0"
   }
 }
