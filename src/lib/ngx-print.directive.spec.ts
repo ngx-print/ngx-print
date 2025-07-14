@@ -1,7 +1,6 @@
-import { Component, DebugElement } from '@angular/core';
+import { Component, DebugElement, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-
 import { NgxPrintDirective } from './ngx-print.directive';
 
 @Component({
@@ -55,6 +54,7 @@ describe('NgxPrintDirective', () => {
   beforeEach(() => {
     // Configure a NgModule-like decorator metadata
     TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
       imports: [TestNgxPrintComponent],
     });
 
@@ -71,12 +71,12 @@ describe('NgxPrintDirective', () => {
   });
 
   it('should create an instance', () => {
-    const directive = new NgxPrintDirective();
+    const directive = buttonEl.injector.get(NgxPrintDirective);
     expect(directive).toBeTruthy();
   });
 
   it('should test the @Input printStyle', () => {
-    const directive = new NgxPrintDirective();
+    const directive = buttonEl.injector.get(NgxPrintDirective);
 
     // Create a spy on the instance's method
     spyOn(directive, 'returnStyleValues').and.callThrough();
@@ -89,7 +89,7 @@ describe('NgxPrintDirective', () => {
   });
 
   it('should returns a string from array of objects', () => {
-    const directive = new NgxPrintDirective();
+    const directive = buttonEl.injector.get(NgxPrintDirective);
     directive.printStyle = styleSheet;
 
     // Ensure the print styles are correctly formatted in the document

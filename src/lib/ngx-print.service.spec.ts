@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NgxPrintService } from './ngx-print.service';
-import { Component, CSP_NONCE, inject } from '@angular/core';
+import { Component, CSP_NONCE, inject, provideZonelessChangeDetection } from '@angular/core';
 import { PrintOptions } from './print-options';
 
 const testNonce = 'dummy-nonce-value';
@@ -60,7 +60,7 @@ describe('NgxPrintService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [TestNgxPrintServiceComponent],
-      providers: [{ provide: CSP_NONCE, useValue: testNonce }, NgxPrintService],
+      providers: [{ provide: CSP_NONCE, useValue: testNonce }, NgxPrintService, provideZonelessChangeDetection()],
     });
     service = TestBed.inject(NgxPrintService);
     // Create a fixture object (that is going to allows us to create an instance of that component)
