@@ -1,4 +1,4 @@
-import { CSP_NONCE, Inject, Injectable, Optional } from '@angular/core';
+import { CSP_NONCE, Injectable, inject } from '@angular/core';
 import { PrintOptions } from './print-options';
 import { Subject } from 'rxjs';
 
@@ -6,11 +6,11 @@ import { Subject } from 'rxjs';
   providedIn: 'root',
 })
 export class PrintBase {
+  private nonce = inject(CSP_NONCE, { optional: true });
+
   private _printStyle: string[] = [];
   private _styleSheetFile: string = '';
   protected printComplete = new Subject<void>();
-
-  constructor(@Inject(CSP_NONCE) @Optional() private nonce?: string | null) {}
 
   //#region Getters and Setters
   /**
