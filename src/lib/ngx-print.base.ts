@@ -1,6 +1,6 @@
 import { CSP_NONCE, Injectable, inject } from '@angular/core';
-import { PrintOptions } from './print-options';
 import { Subject } from 'rxjs';
+import { PrintOptions } from './print-options';
 
 @Injectable({
   providedIn: 'root',
@@ -257,52 +257,29 @@ export class PrintBase {
     // Insert print contents
     body.innerHTML += printContents;
 
-    // Add script
-    const script = doc.createElement('script');
-    script.defer = true;
-
-    if (this.nonce) {
-      script.setAttribute('nonce', this.nonce);
-    }
-
-    script.textContent = `
-      function triggerPrint(event) {
-        window.removeEventListener('load', triggerPrint, false);
-        ${
-          printOptions.previewOnly
-            ? ''
-            : `setTimeout(function() {
-          closeWindow(window.print());
-        }, ${printOptions.printDelay});`
-        }
-      }
-      function closeWindow(){
-        ${printOptions.closeWindow ? 'window.close();' : ''}
-      }
-      window.addEventListener('load', triggerPrint, false);
-      window.addEventListener('afterprint', function () {
-        if (window.opener) {
-          window.opener.postMessage({ type: 'print-complete' }, '*');
-        }
-        closeWindow();
-      }, { once: true });
-    `;
-    body.appendChild(script);
-
     // Assemble the document
     html.appendChild(head);
     html.appendChild(body);
     doc.appendChild(html);
 
     popupWin.document.close();
+
+    // Listen for the print-complete message
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'print-complete') {
-        // Notify of print completion
         this.notifyPrintComplete();
         window.removeEventListener('message', handleMessage);
       }
     };
-
     window.addEventListener('message', handleMessage);
+
+    // Post the print options to the new window after it loads
+    popupWin.addEventListener('load', () => {
+      if ((popupWin as any).initPrintWindow) {
+        (popupWin as any).initPrintWindow(popupWin, printOptions);
+      } else {
+        popupWin.postMessage({ type: 'init-print', options: printOptions }, '*');
+      }
+    });
   }
 }
