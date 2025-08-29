@@ -265,20 +265,19 @@ export class PrintBase {
     popupWin.document.close();
 
     // Listen for the print-complete message
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'print-complete') {
+    const checkClosedInterval = setInterval(() => {
+      if (popupWin.closed) {
+        clearInterval(checkClosedInterval);
         this.notifyPrintComplete();
-        window.removeEventListener('message', handleMessage);
       }
-    };
-    window.addEventListener('message', handleMessage);
+    }, 500);
 
-    // Post the print options to the new window after it loads
     popupWin.addEventListener('load', () => {
-      if ((popupWin as any).initPrintWindow) {
-        (popupWin as any).initPrintWindow(popupWin, printOptions);
-      } else {
-        popupWin.postMessage({ type: 'init-print', options: printOptions }, '*');
+      if (!printOptions.previewOnly) {
+        setTimeout(() => {
+          popupWin.print();
+          if (printOptions.closeWindow) popupWin.close();
+        }, printOptions.printDelay || 0);
       }
     });
   }
