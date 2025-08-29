@@ -264,7 +264,7 @@ export class PrintBase {
 
     popupWin.document.close();
 
-    // Listen for the print-complete message
+    // Listen for the window closing
     const checkClosedInterval = setInterval(() => {
       if (popupWin.closed) {
         clearInterval(checkClosedInterval);
