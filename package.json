@@ -29,7 +29,7 @@
     "lint": "ng lint"
   },
   "devDependencies": {
-    "angular-eslint": "20.6.0",
+    "angular-eslint": "20.7.0",
     "@angular/build": "^20.2.0",
     "@angular/cli": "^20.2.0",
     "@angular/common": "^20.2.0",
