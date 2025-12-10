@@ -1,4 +1,4 @@
-import { CSP_NONCE, Injectable, inject } from '@angular/core';
+import { CSP_NONCE, inject, Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { PrintOptions } from './print-options';
 
@@ -21,10 +21,8 @@ export class PrintBase {
    */
   protected setPrintStyle(values: { [key: string]: { [key: string]: string } }) {
     this._printStyle = [];
-    for (const key in values) {
-      if (Object.prototype.hasOwnProperty.call(values, key)) {
-        this._printStyle.push((key + JSON.stringify(values[key])).replace(/['"]+/g, ''));
-      }
+    for (const key of Object.keys(values)) {
+      this._printStyle.push((key + JSON.stringify(values[key])).replace(/['"]+/g, ''));
     }
   }
 
@@ -57,7 +55,7 @@ export class PrintBase {
    * @protected
    */
   protected setStyleSheetFile(cssList: string) {
-    const linkTagFn = function (cssFileName: string) {
+    const linkTagFn = (cssFileName: string) => {
       return `<link rel="stylesheet" type="text/css" href="${cssFileName}">`;
     };
 
