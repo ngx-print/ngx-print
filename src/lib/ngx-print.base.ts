@@ -1,4 +1,4 @@
-import { CSP_NONCE, Injectable, inject } from '@angular/core';
+import { CSP_NONCE, inject, Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { PrintOptions } from './print-options';
 
@@ -80,8 +80,7 @@ export class PrintBase {
    * @private
    */
   private updateInputDefaults(elements: HTMLCollectionOf<HTMLInputElement>): void {
-    for (let i = 0; i < elements.length; i++) {
-      const element = elements[i];
+    for (const element of Array.from(elements)) {
       element['defaultValue'] = element.value;
       if (element['checked']) element['defaultChecked'] = true;
     }
@@ -94,9 +93,9 @@ export class PrintBase {
    * @private
    */
   private updateSelectDefaults(elements: HTMLCollectionOf<HTMLSelectElement>): void {
-    for (let i = 0; i < elements.length; i++) {
-      const element = elements[i];
+    for (const element of Array.from(elements)) {
       const selectedIdx = element.selectedIndex;
+      if (selectedIdx < 0 || selectedIdx >= element.options.length) continue;
       const selectedOption: HTMLOptionElement = element.options[selectedIdx];
 
       selectedOption.defaultSelected = true;
@@ -110,8 +109,7 @@ export class PrintBase {
    * @private
    */
   private updateTextAreaDefaults(elements: HTMLCollectionOf<HTMLTextAreaElement>): void {
-    for (let i = 0; i < elements.length; i++) {
-      const element = elements[i];
+    for (const element of Array.from(elements)) {
       element['defaultValue'] = element.value;
     }
   }
@@ -135,10 +133,10 @@ export class PrintBase {
    * @private
    */
   private updateCanvasToImage(elements: HTMLCollectionOf<HTMLCanvasElement>): void {
-    for (let i = 0; i < elements.length; i++) {
-      const element = this.canvasToImageHtml(elements[i]);
-      elements[i].insertAdjacentHTML('afterend', element);
-      elements[i].remove();
+    for (const canvasElement of Array.from(elements)) {
+      const imgHtml = this.canvasToImageHtml(canvasElement);
+      canvasElement.insertAdjacentHTML('afterend', imgHtml);
+      canvasElement.remove();
     }
   }
 
