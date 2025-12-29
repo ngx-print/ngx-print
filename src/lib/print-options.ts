@@ -3,7 +3,7 @@ export class PrintOptions {
   printTitle: string = '';
   useExistingCss: boolean = false;
   bodyClass: string = '';
-  openNewTab: boolean = false;
+  printMethod: 'window' | 'tab' | 'iframe' = 'window';
   previewOnly: boolean = false;
   closeWindow: boolean = true;
   printDelay: number = 0;

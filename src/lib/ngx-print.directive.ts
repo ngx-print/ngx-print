@@ -2,12 +2,14 @@ import { Directive, HostListener, Input, output } from '@angular/core';
 import { PrintBase } from './ngx-print.base';
 import { PrintOptions } from './print-options';
 import { take } from 'rxjs';
+
 @Directive({
   selector: '[ngxPrint]',
   standalone: true,
 })
 export class NgxPrintDirective extends PrintBase {
   private printOptions = new PrintOptions();
+
   /**
    * Prevents the print dialog from opening on the window
    *
@@ -70,11 +72,11 @@ export class NgxPrintDirective extends PrintBase {
   }
 
   /**
-   * Whether to open a new window or default to new window.
+   * Which PrintMethod (iframe/window/tab) to use.
    *
    */
-  @Input() set openNewTab(value: boolean) {
-    this.printOptions = { ...this.printOptions, openNewTab: value };
+  @Input() set printMethod(value: typeof PrintOptions.prototype.printMethod) {
+    this.printOptions = { ...this.printOptions, printMethod: value };
   }
 
   /**
@@ -102,7 +104,7 @@ export class NgxPrintDirective extends PrintBase {
    * @memberof NgxPrintDirective
    */
   @HostListener('click')
-  public print(): void {
+  public override print(): void {
     super.print(this.printOptions);
     this.printComplete.pipe(take(1)).subscribe(() => {
       this.printCompleted.emit(undefined);
