@@ -8,6 +8,7 @@ import { PrintOptions } from './print-options';
 export class PrintBase {
   private nonce = inject(CSP_NONCE, { optional: true });
 
+  private _iframeElement: HTMLIFrameElement | undefined;
   private _printStyle: string[] = [];
   private _styleSheetFile: string = '';
   protected printComplete = new Subject<void>();
@@ -177,6 +178,7 @@ export class PrintBase {
     }
     return html.join('\r\n');
   }
+
   //#endregion
 
   protected notifyPrintComplete() {
@@ -190,28 +192,17 @@ export class PrintBase {
    * @public
    */
   protected print(printOptions: PrintOptions): void {
-    let styles = '',
-      links = '',
-      popOut = 'top=0,left=0,height=auto,width=auto';
-    const baseTag = this.getElementTag('base');
-
-    if (printOptions.useExistingCss) {
-      styles = this.getElementTag('style');
-      links = this.getElementTag('link');
+    if (printOptions.printMethod === 'iframe') {
+      this.printWithIframe(printOptions);
+    } else {
+      this.printWithWindow(printOptions);
     }
+  }
 
-    // If the openNewTab option is set to true, then set the popOut option to an empty string.
+  protected printWithWindow(printOptions: PrintOptions) {
+    // If the openNewTab option is set to true, then set the popOut option to an empty string
     // This will cause the print dialog to open in a new tab.
-    if (printOptions.openNewTab) {
-      popOut = '';
-    }
-
-    const printContents = this.getHtmlContents(printOptions.printSectionId);
-    if (!printContents) {
-      // Handle the case where the specified print section is not found.
-      console.error(`Print section with id ${printOptions.printSectionId} not found.`);
-      return;
-    }
+    const popOut = printOptions.printMethod === 'tab' ? '' : 'top=0,left=0,height=auto,width=auto';
 
     const popupWin = window.open('', '_blank', popOut);
 
@@ -222,41 +213,8 @@ export class PrintBase {
     }
 
     popupWin.document.open();
-
     // Create the HTML structure
-    const doc = popupWin.document;
-
-    // Set up the basic HTML structure
-    const html = doc.createElement('html');
-    const head = doc.createElement('head');
-    const body = doc.createElement('body');
-
-    // Set title
-    const title = doc.createElement('title');
-    title.textContent = printOptions.printTitle || '';
-    head.appendChild(title);
-
-    // Add base tag, styles, and links
-    if (baseTag) {
-      head.innerHTML += baseTag;
-    }
-    head.innerHTML += this.returnStyleValues();
-    head.innerHTML += this.returnStyleSheetLinkTags();
-    head.innerHTML += styles;
-    head.innerHTML += links;
-
-    // Set body class if provided
-    if (printOptions.bodyClass) {
-      body.className = printOptions.bodyClass;
-    }
-
-    // Insert print contents
-    body.innerHTML += printContents;
-
-    // Assemble the document
-    html.appendChild(head);
-    html.appendChild(body);
-    doc.appendChild(html);
+    this.buildPrintDocument(popupWin.document, printOptions);
 
     popupWin.document.close();
 
@@ -276,5 +234,115 @@ export class PrintBase {
         }, printOptions.printDelay || 0);
       }
     });
+  }
+
+  private printWithIframe(printOptions: PrintOptions): void {
+    if (this._iframeElement) {
+      this._iframeElement.remove();
+    }
+    this._iframeElement = document.createElement('iframe');
+    const iframe = this._iframeElement;
+    iframe.id = 'print-iframe-' + new Date().getTime();
+    iframe.style.position = 'absolute';
+    iframe.style.left = '-9999px';
+    iframe.style.top = '-9999px';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) {
+      console.error('Could not access iframe document.');
+      document.body.removeChild(iframe);
+      return;
+    }
+
+    iframeDoc.open();
+    const success = this.buildPrintDocument(iframeDoc, printOptions);
+    if (!success) {
+      iframeDoc.close();
+      document.body.removeChild(iframe);
+      return;
+    }
+    iframeDoc.close();
+
+    iframe.onload = () => {
+      const printWindow = iframe.contentWindow;
+      if (!printWindow) {
+        console.error('Could not access iframe window.');
+        document.body.removeChild(iframe);
+        return;
+      }
+
+      setTimeout(() => {
+        if (printOptions.previewOnly) {
+          return;
+        }
+        printWindow.focus();
+        printWindow.print();
+
+        const mediaQueryList = printWindow.matchMedia('print');
+        const listener = (mql: MediaQueryListEvent | MediaQueryList) => {
+          if (!mql.matches) {
+            this.notifyPrintComplete();
+            mediaQueryList.removeEventListener('change', listener);
+          }
+        };
+
+        mediaQueryList.addEventListener('change', listener);
+      }, printOptions.printDelay || 0);
+    };
+  }
+
+  private prepareDocumentComponents(printOptions: PrintOptions) {
+    let styles = '';
+    let links = '';
+    const baseTag = this.getElementTag('base');
+
+    if (printOptions.useExistingCss) {
+      styles = this.getElementTag('style');
+      links = this.getElementTag('link');
+    }
+
+    const printContents = this.getHtmlContents(printOptions.printSectionId);
+
+    return { styles, links, baseTag, printContents };
+  }
+
+  private buildPrintDocument(doc: Document, printOptions: PrintOptions): boolean {
+    const components = this.prepareDocumentComponents(printOptions);
+
+    if (!components.printContents) {
+      console.error(`Print section with id ${printOptions.printSectionId} not found.`);
+      return false;
+    }
+
+    const html = doc.createElement('html');
+    const head = doc.createElement('head');
+    const body = doc.createElement('body');
+
+    // Set title
+    const title = doc.createElement('title');
+    title.textContent = printOptions.printTitle || '';
+    head.appendChild(title);
+
+    // Add all head content
+    if (components.baseTag) head.innerHTML += components.baseTag;
+    head.innerHTML += this.returnStyleValues();
+    head.innerHTML += this.returnStyleSheetLinkTags();
+    head.innerHTML += components.styles;
+    head.innerHTML += components.links;
+
+    // Set body class and content
+    if (printOptions.bodyClass) body.className = printOptions.bodyClass;
+    body.innerHTML += components.printContents;
+
+    // Assemble document
+    html.appendChild(head);
+    html.appendChild(body);
+    doc.appendChild(html);
+
+    return true;
   }
 }

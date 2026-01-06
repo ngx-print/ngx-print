@@ -156,7 +156,7 @@ describe('NgxPrintService', () => {
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
-      openNewTab: true,
+      printMethod: 'tab',
     });
 
     component.printMe(customPrintOptions);
