@@ -1,8 +1,15 @@
-# 21.0.0 (2025-12-xx)
+# 21.1.0 (2026-01-07)
+
+### New features
+
+* iFrame printing
 
 ### New features
 
 * Support for Angular 21.
+
+### Bug fixes
+* nullpointer defaultSelected
 
 # 20.1.0 (2025-09-01)
 

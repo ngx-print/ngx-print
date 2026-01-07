@@ -1,6 +1,6 @@
 {
   "name": "ngx-print",
-  "version": "21.0.0",
+  "version": "21.1.0",
   "description": "Plug n' Play Angular (2++) directive to print your stuff",
   "author": "https://github.com/ngx-print/ngx-print/graphs/contributors",
   "repository": {
@@ -29,9 +29,8 @@
     "lint": "ng lint"
   },
   "devDependencies": {
-    "angular-eslint": "^21.1.0",
     "@angular/build": "^21.0.2",
-    "@angular/cli": "^21.0.2",
+    "@angular/cli": "^21.0.4",
     "@angular/common": "^21.0.3",
     "@angular/compiler": "^21.0.3",
     "@angular/compiler-cli": "^21.0.3",
@@ -45,6 +44,7 @@
     "@typescript-eslint/parser": "^8.49.0",
     "@typescript-eslint/types": "^8.49.0",
     "@typescript-eslint/utils": "^8.49.0",
+    "angular-eslint": "^21.0.1",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
