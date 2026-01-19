@@ -188,10 +188,11 @@ export class PrintBase {
   /**
    * Prints the specified content using the provided print options.
    *
-   * @param {PrintOptions} printOptions - Options for printing.
    * @public
+   * @param printOptionInput - Options for printing.
    */
-  protected print(printOptions: PrintOptions): void {
+  protected print(printOptionInput?: Partial<PrintOptions>): void {
+    const printOptions = new PrintOptions(printOptionInput);
     if (printOptions.printMethod === 'iframe') {
       this.printWithIframe(printOptions);
     } else {
@@ -314,7 +315,7 @@ export class PrintBase {
     const components = this.prepareDocumentComponents(printOptions);
 
     if (!components.printContents) {
-      console.error(`Print section with id ${printOptions.printSectionId} not found.`);
+      console.error(`Print section with id "${printOptions.printSectionId}" not found.`);
       return false;
     }
 
