@@ -36,7 +36,7 @@ export class PrintBase {
    *
    * -join/replace to transform an array objects to css-styled string
    */
-  public returnStyleValues() {
+  public returnStyleValues(): string {
     const styleNonce = this.nonce ? ` nonce="${this.nonce}"` : '';
     return `<style${styleNonce}> ${this._printStyle.join(' ').replace(/,/g, ';')} </style>`;
   }
@@ -56,17 +56,12 @@ export class PrintBase {
    * @param {string} cssList - CSS file or list of CSS files.
    * @protected
    */
-  protected setStyleSheetFile(cssList: string) {
-    const linkTagFn = (cssFileName: string) => {
-      return `<link rel="stylesheet" type="text/css" href="${cssFileName}">`;
-    };
-
-    if (cssList.indexOf(',') !== -1) {
-      const valueArr = cssList.split(',');
-      this._styleSheetFile = valueArr.map(val => linkTagFn(val)).join('');
-    } else {
-      this._styleSheetFile = linkTagFn(cssList);
-    }
+  // prettier-ignore
+  protected setStyleSheetFile(cssList: string): void {
+    const files = cssList.split(',').map(f => f.trim());
+    this._styleSheetFile = files
+      .map(url => `<link rel="stylesheet" type="text/css" href="${url}">`)
+      .join('');
   }
 
   //#endregion
@@ -86,16 +81,23 @@ export class PrintBase {
       if (srcNode instanceof HTMLInputElement) {
         if (srcNode.type === 'checkbox' || srcNode.type === 'radio') {
           if (srcNode.checked) cloneNode.setAttribute('checked', '');
+          else cloneNode.removeAttribute('checked'); // Remove if unchecked
+        } else if (srcNode.type === 'file') {
+          // File inputs can't be set programmatically for security
+          continue;
         } else {
           cloneNode.setAttribute('value', srcNode.value);
         }
       } else if (srcNode instanceof HTMLTextAreaElement) {
-        cloneNode.innerHTML = srcNode.value; // Textarea content is innerHTML/text
+        cloneNode.textContent = srcNode.value; // Use textContent, not innerHTML
       } else if (srcNode instanceof HTMLSelectElement) {
-        const options = cloneNode.querySelectorAll('option');
-        if (options[srcNode.selectedIndex]) {
-          options[srcNode.selectedIndex].setAttribute('selected', '');
-        }
+        Array.from((cloneNode as HTMLSelectElement).options).forEach((opt, idx) => {
+          if (idx === srcNode.selectedIndex) {
+            opt.setAttribute('selected', '');
+          } else {
+            opt.removeAttribute('selected'); // Remove from non-selected
+          }
+        });
       }
     }
   }
@@ -120,7 +122,8 @@ export class PrintBase {
       if (rect.height) img.style.height = `${rect.height}px`;
 
       return img;
-    } catch {
+    } catch (err) {
+      console.warn(`Canvas conversion failed for ${canvasElm}. Likley the canvas is tainted:`, err);
       // If toDataURL() fails (e.g., tainted canvas), keep canvas as-is in print output
       return null;
     }
@@ -252,6 +255,7 @@ export class PrintBase {
     iframe.style.top = '-9999px';
     iframe.style.width = '0px';
     iframe.style.height = '0px';
+    iframe.ariaHidden = 'true';
 
     this.document.body.appendChild(iframe);
 
@@ -332,7 +336,9 @@ export class PrintBase {
     head.appendChild(title);
 
     // Add all head content
-    if (components.baseTag) head.innerHTML += components.baseTag;
+    if (components.baseTag) {
+      head.innerHTML += components.baseTag;
+    }
     head.innerHTML += this.returnStyleValues();
     head.innerHTML += this.returnStyleSheetLinkTags();
     head.innerHTML += components.styles;
