@@ -1,0 +1,47 @@
+<h2>Print Library Demo</h2>
+
+<p>
+  Fill out the form and draw on the canvas below, then click print.
+  The library will capture the current state of all fields and the canvas.
+</p>
+
+<button type="button" (click)="onPrint()">Print Section</button>
+
+<!-- This is the section targeted by the ID -->
+<div id="print-demo-section" class="print-container">
+  <h3> printable-section.pdf </h3>
+
+  <form [formGroup]="form">
+    <div class="form-group">
+      <label for="fullName">Full Name (Input)</label>
+      <input id="fullName" type="text" formControlName="name" placeholder="Enter your name" />
+    </div>
+
+    <div class="form-group">
+      <label for="role">Role (Select)</label>
+      <select id="role" formControlName="role">
+        <option value="developer">Developer</option>
+        <option value="designer">Designer</option>
+        <option value="manager">Manager</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="bio">Biography (Textarea)</label>
+      <textarea id="bio" formControlName="bio" rows="4"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Checkbox (Input)</label>
+      <div>
+        <input type="checkbox" id="agree" formControlName="agree" />
+        <label for="agree" style="display:inline;">I agree to the terms</label>
+      </div>
+    </div>
+  </form>
+
+  <div class="form-group">
+    <label>Signature / Drawing (Canvas)</label>
+    <canvas #drawingCanvas width="400" height="150"></canvas>
+  </div>
+</div>
