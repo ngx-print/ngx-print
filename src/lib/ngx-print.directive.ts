@@ -1,4 +1,4 @@
-import { Directive, HostListener, Input, output } from '@angular/core';
+import { Directive, Input, output } from '@angular/core';
 import { PrintBase } from './ngx-print.base';
 import { PrintOptions } from './print-options';
 import { take } from 'rxjs';
@@ -6,6 +6,9 @@ import { take } from 'rxjs';
 @Directive({
   selector: '[ngxPrint]',
   standalone: true,
+  host: {
+    '(click)': 'print()',
+  },
 })
 export class NgxPrintDirective extends PrintBase {
   private printOptions = new PrintOptions();
@@ -103,11 +106,10 @@ export class NgxPrintDirective extends PrintBase {
    *
    * @memberof NgxPrintDirective
    */
-  @HostListener('click')
   public override print(): void {
     super.print(this.printOptions);
     this.printComplete.pipe(take(1)).subscribe(() => {
-      this.printCompleted.emit(undefined);
+      this.printCompleted.emit();
     });
   }
 
