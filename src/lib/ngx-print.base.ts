@@ -117,26 +117,47 @@ export class PrintBase {
   /**
    * Converts a canvas element to an image and returns its HTML string.
    *
-   * @param {HTMLCanvasElement} element - The canvas element to convert.
-   * @returns {string} - HTML string of the image.
+   * @param {HTMLCanvasElement} canvasElm - The canvas element to convert.
+   * @returns {HTMLImageElement | null} - HTML Element of the image.
    * @private
    */
-  private canvasToImageHtml(element: HTMLCanvasElement): string {
-    const dataUrl = element.toDataURL();
-    return `<img src="${dataUrl}" style="max-width: 100%;">`;
+  private canvasToImageHtml(canvasElm: HTMLCanvasElement): HTMLImageElement | null {
+    try {
+      const dataUrl = canvasElm.toDataURL(); // may throw if canvas is tainted
+      const img = this.document.createElement('img');
+      img.src = dataUrl;
+      img.style.maxWidth = '100%';
+
+      // Preserve displayed size (not just bitmap size)
+      const rect = canvasElm.getBoundingClientRect();
+      if (rect.width) img.style.width = `${rect.width}px`;
+      if (rect.height) img.style.height = `${rect.height}px`;
+
+      return img;
+    } catch {
+      // If toDataURL() fails (e.g., tainted canvas), keep canvas as-is in print output
+      return null;
+    }
   }
 
   /**
    * Includes canvas contents in the print section via img tags.
    *
-   * @param {HTMLCollectionOf<HTMLCanvasElement>} elements - Collection of canvas elements.
    * @private
+   * @param source
+   * @param clone
    */
-  private updateCanvasToImage(elements: HTMLCollectionOf<HTMLCanvasElement>): void {
-    for (const canvasElement of Array.from(elements)) {
-      const imgHtml = this.canvasToImageHtml(canvasElement);
-      canvasElement.insertAdjacentHTML('afterend', imgHtml);
-      canvasElement.remove();
+  private updateCanvasToImage(source: HTMLElement, clone: HTMLElement): void {
+    const sourceCanvases = source.querySelectorAll('canvas');
+    const cloneCanvases = clone.querySelectorAll('canvas');
+
+    for (let i = 0; i < sourceCanvases.length; i++) {
+      const srcCanvas = sourceCanvases[i];
+      const cloneCanvas = cloneCanvases[i];
+      const img = this.canvasToImageHtml(srcCanvas);
+      if (img) {
+        cloneCanvas.replaceWith(img);
+      }
     }
   }
 
@@ -148,20 +169,22 @@ export class PrintBase {
    * @private
    */
   private getHtmlContents(printSectionId: string): string | null {
-    const printContents = this.document.getElementById(printSectionId);
-    if (!printContents) return null;
+    const sourceElm = this.document.getElementById(printSectionId);
+    if (!sourceElm) return null;
 
-    const inputEls = printContents.getElementsByTagName('input');
-    const selectEls = printContents.getElementsByTagName('select');
-    const textAreaEls = printContents.getElementsByTagName('textarea');
-    const canvasEls = printContents.getElementsByTagName('canvas');
+    const cloneElm = sourceElm.cloneNode(true) as HTMLElement; // cloneNode(true) deep clones subtree
 
-    this.updateInputDefaults(inputEls);
-    this.updateSelectDefaults(selectEls);
-    this.updateTextAreaDefaults(textAreaEls);
-    this.updateCanvasToImage(canvasEls);
+    const inputEls = sourceElm.getElementsByTagName('input');
+    const selectEls = sourceElm.getElementsByTagName('select');
+    const textAreaEls = sourceElm.getElementsByTagName('textarea');
 
-    return printContents.innerHTML;
+    // todo
+    //this.updateInputDefaults(inputEls);
+    //this.updateSelectDefaults(selectEls);
+    //this.updateTextAreaDefaults(textAreaEls);
+    this.updateCanvasToImage(sourceElm, cloneElm);
+
+    return cloneElm.innerHTML;
   }
 
   /**
