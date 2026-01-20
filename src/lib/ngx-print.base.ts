@@ -1,4 +1,4 @@
-import { CSP_NONCE, inject, Injectable } from '@angular/core';
+import { CSP_NONCE, DOCUMENT, inject, Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { PrintOptions } from './print-options';
 
@@ -6,6 +6,7 @@ import { PrintOptions } from './print-options';
   providedIn: 'root',
 })
 export class PrintBase {
+  private document = inject(DOCUMENT);
   private nonce = inject(CSP_NONCE, { optional: true });
 
   private _iframeElement: HTMLIFrameElement | undefined;
@@ -147,7 +148,7 @@ export class PrintBase {
    * @private
    */
   private getHtmlContents(printSectionId: string): string | null {
-    const printContents = document.getElementById(printSectionId);
+    const printContents = this.document.getElementById(printSectionId);
     if (!printContents) return null;
 
     const inputEls = printContents.getElementsByTagName('input');
@@ -172,7 +173,7 @@ export class PrintBase {
    */
   private getElementTag(tag: keyof HTMLElementTagNameMap): string {
     const html: string[] = [];
-    const elements = document.getElementsByTagName(tag);
+    const elements = this.document.getElementsByTagName(tag);
     for (let index = 0; index < elements.length; index++) {
       html.push(elements[index].outerHTML);
     }
@@ -241,7 +242,7 @@ export class PrintBase {
     if (this._iframeElement) {
       this._iframeElement.remove();
     }
-    this._iframeElement = document.createElement('iframe');
+    this._iframeElement = this.document.createElement('iframe');
     const iframe = this._iframeElement;
     iframe.id = 'print-iframe-' + new Date().getTime();
     iframe.style.position = 'absolute';
@@ -250,12 +251,12 @@ export class PrintBase {
     iframe.style.width = '0px';
     iframe.style.height = '0px';
 
-    document.body.appendChild(iframe);
+    this.document.body.appendChild(iframe);
 
     const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!iframeDoc) {
       console.error('Could not access iframe document.');
-      document.body.removeChild(iframe);
+      this.document.body.removeChild(iframe);
       return;
     }
 
@@ -263,7 +264,7 @@ export class PrintBase {
     const success = this.buildPrintDocument(iframeDoc, printOptions);
     if (!success) {
       iframeDoc.close();
-      document.body.removeChild(iframe);
+      this.document.body.removeChild(iframe);
       return;
     }
     iframeDoc.close();
@@ -272,7 +273,7 @@ export class PrintBase {
       const printWindow = iframe.contentWindow;
       if (!printWindow) {
         console.error('Could not access iframe window.');
-        document.body.removeChild(iframe);
+        this.document.body.removeChild(iframe);
         return;
       }
 
