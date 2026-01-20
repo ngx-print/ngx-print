@@ -73,44 +73,30 @@ export class PrintBase {
 
   //#region Private methods used by PrintBase
 
-  /**
-   * Updates the default values for input elements.
-   *
-   * @param {HTMLCollectionOf<HTMLInputElement>} elements - Collection of input elements.
-   * @private
-   */
-  private updateInputDefaults(elements: HTMLCollectionOf<HTMLInputElement>): void {
-    for (const element of Array.from(elements)) {
-      element['defaultValue'] = element.value;
-      if (element['checked']) element['defaultChecked'] = true;
-    }
-  }
+  private syncFormValues(source: HTMLElement, clone: HTMLElement): void {
+    // Select all form elements
+    const selector = 'input, select, textarea';
+    const sourceEls = source.querySelectorAll(selector);
+    const cloneEls = clone.querySelectorAll(selector);
 
-  /**
-   * Updates the default values for select elements.
-   *
-   * @param {HTMLCollectionOf<HTMLSelectElement>} elements - Collection of select elements.
-   * @private
-   */
-  private updateSelectDefaults(elements: HTMLCollectionOf<HTMLSelectElement>): void {
-    for (const element of Array.from(elements)) {
-      const selectedIdx = element.selectedIndex;
-      if (selectedIdx < 0 || selectedIdx >= element.options.length) continue;
-      const selectedOption: HTMLOptionElement = element.options[selectedIdx];
+    for (let i = 0; i < sourceEls.length; i++) {
+      const srcNode = sourceEls[i] as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+      const cloneNode = cloneEls[i] as typeof srcNode;
 
-      selectedOption.defaultSelected = true;
-    }
-  }
-
-  /**
-   * Updates the default values for textarea elements.
-   *
-   * @param {HTMLCollectionOf<HTMLTextAreaElement>} elements - Collection of textarea elements.
-   * @private
-   */
-  private updateTextAreaDefaults(elements: HTMLCollectionOf<HTMLTextAreaElement>): void {
-    for (const element of Array.from(elements)) {
-      element['defaultValue'] = element.value;
+      if (srcNode instanceof HTMLInputElement) {
+        if (srcNode.type === 'checkbox' || srcNode.type === 'radio') {
+          if (srcNode.checked) cloneNode.setAttribute('checked', '');
+        } else {
+          cloneNode.setAttribute('value', srcNode.value);
+        }
+      } else if (srcNode instanceof HTMLTextAreaElement) {
+        cloneNode.innerHTML = srcNode.value; // Textarea content is innerHTML/text
+      } else if (srcNode instanceof HTMLSelectElement) {
+        const options = cloneNode.querySelectorAll('option');
+        if (options[srcNode.selectedIndex]) {
+          options[srcNode.selectedIndex].setAttribute('selected', '');
+        }
+      }
     }
   }
 
@@ -174,14 +160,7 @@ export class PrintBase {
 
     const cloneElm = sourceElm.cloneNode(true) as HTMLElement; // cloneNode(true) deep clones subtree
 
-    const inputEls = sourceElm.getElementsByTagName('input');
-    const selectEls = sourceElm.getElementsByTagName('select');
-    const textAreaEls = sourceElm.getElementsByTagName('textarea');
-
-    // todo
-    //this.updateInputDefaults(inputEls);
-    //this.updateSelectDefaults(selectEls);
-    //this.updateTextAreaDefaults(textAreaEls);
+    this.syncFormValues(sourceElm, cloneElm);
     this.updateCanvasToImage(sourceElm, cloneElm);
 
     return cloneElm.innerHTML;
