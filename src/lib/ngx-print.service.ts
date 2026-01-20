@@ -23,7 +23,7 @@ export class NgxPrintService extends PrintBase {
    * @memberof NgxPrintService
    * @returns {void}
    */
-  public override print(printOptions: PrintOptions): void {
+  public override print(printOptions?: Partial<PrintOptions>): void {
     // Call the print method in the parent class
     super.print(printOptions);
   }
