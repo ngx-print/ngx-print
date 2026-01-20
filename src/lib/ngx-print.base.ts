@@ -46,7 +46,7 @@ export class PrintBase {
    * be injected later within <head></head> tag.
    *
    */
-  private returnStyleSheetLinkTags() {
+  private returnStyleSheetLinkTags(): string {
     return this._styleSheetFile;
   }
 
@@ -59,8 +59,9 @@ export class PrintBase {
   // prettier-ignore
   protected setStyleSheetFile(cssList: string): void {
     const files = cssList.split(',').map(f => f.trim());
+    const nonceAttr = this.nonce ? ` nonce="${this.nonce}"` : '';
     this._styleSheetFile = files
-      .map(url => `<link rel="stylesheet" type="text/css" href="${url}">`)
+      .map(url => `<link${nonceAttr} rel="stylesheet" type="text/css" href="${url}">`)
       .join('');
   }
 
@@ -123,7 +124,7 @@ export class PrintBase {
 
       return img;
     } catch (err) {
-      console.warn(`Canvas conversion failed for ${canvasElm}. Likley the canvas is tainted:`, err);
+      console.warn(`Canvas conversion failed for ${canvasElm}. Likely the canvas is tainted:`, err);
       // If toDataURL() fails (e.g., tainted canvas), keep canvas as-is in print output
       return null;
     }
@@ -291,7 +292,7 @@ export class PrintBase {
         printWindow.print();
 
         const mediaQueryList = printWindow.matchMedia('print');
-        const listener = (mql: MediaQueryListEvent | MediaQueryList) => {
+        const listener = (mql: MediaQueryListEvent) => {
           if (!mql.matches) {
             this.notifyPrintComplete();
             mediaQueryList.removeEventListener('change', listener);
