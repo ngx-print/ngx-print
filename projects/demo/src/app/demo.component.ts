@@ -1,6 +1,7 @@
 import { afterNextRender, Component, ElementRef, inject, viewChild } from '@angular/core';
 import { NgxPrintService } from '../../../../src/lib/ngx-print.service';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { PrintOptions } from '../../../../src/public_api';
 
 @Component({
   selector: 'app-root',
@@ -12,9 +13,22 @@ export class DemoComponent {
   private _printService = inject(NgxPrintService);
   private _fb = inject(FormBuilder);
 
+  protected readonly printMethods = [
+    'iframe',
+    'window',
+    'tab',
+  ] as const;
+
   canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('drawingCanvas');
 
-  form = this._fb.group({
+  optionForm = this._fb.group({
+    printMethod: this._fb.nonNullable.control<typeof PrintOptions.prototype.printMethod>('iframe'),
+    printTitle: this._fb.nonNullable.control<string>('Demo Component Print'),
+    useExistingCss: this._fb.nonNullable.control<boolean>(true),
+    }
+  )
+
+  demoform = this._fb.group({
     name: ['Angular Developer'],
     role: ['developer'],
     bio: ['This text will be preserved in the print view.'],
@@ -31,9 +45,9 @@ export class DemoComponent {
   onPrint() {
     this._printService.print({
       printSectionId: 'print-demo-section',
-      printTitle: 'Demo Component Print',
-      printMethod: 'iframe',
-      useExistingCss: true,
+      printTitle: this.optionForm.controls.printTitle.value!,
+      printMethod: this.optionForm.controls.printMethod.value,
+      useExistingCss: this.optionForm.controls.useExistingCss.value
     });
   }
 
