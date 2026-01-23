@@ -1,4 +1,4 @@
-import { CSP_NONCE, inject, Injectable } from '@angular/core';
+import { CSP_NONCE, DOCUMENT, inject, Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { PrintOptions } from './print-options';
 
@@ -6,6 +6,7 @@ import { PrintOptions } from './print-options';
   providedIn: 'root',
 })
 export class PrintBase {
+  private document = inject(DOCUMENT);
   private nonce = inject(CSP_NONCE, { optional: true });
 
   private _iframeElement: HTMLIFrameElement | undefined;
@@ -35,7 +36,7 @@ export class PrintBase {
    *
    * -join/replace to transform an array objects to css-styled string
    */
-  public returnStyleValues() {
+  public returnStyleValues(): string {
     const styleNonce = this.nonce ? ` nonce="${this.nonce}"` : '';
     return `<style${styleNonce}> ${this._printStyle.join(' ').replace(/,/g, ';')} </style>`;
   }
@@ -45,7 +46,7 @@ export class PrintBase {
    * be injected later within <head></head> tag.
    *
    */
-  private returnStyleSheetLinkTags() {
+  private returnStyleSheetLinkTags(): string {
     return this._styleSheetFile;
   }
 
@@ -55,87 +56,98 @@ export class PrintBase {
    * @param {string} cssList - CSS file or list of CSS files.
    * @protected
    */
-  protected setStyleSheetFile(cssList: string) {
-    const linkTagFn = (cssFileName: string) => {
-      return `<link rel="stylesheet" type="text/css" href="${cssFileName}">`;
-    };
-
-    if (cssList.indexOf(',') !== -1) {
-      const valueArr = cssList.split(',');
-      this._styleSheetFile = valueArr.map(val => linkTagFn(val)).join('');
-    } else {
-      this._styleSheetFile = linkTagFn(cssList);
-    }
+  // prettier-ignore
+  protected setStyleSheetFile(cssList: string): void {
+    const files = cssList.split(',').map(f => f.trim());
+    const nonceAttr = this.nonce ? ` nonce="${this.nonce}"` : '';
+    this._styleSheetFile = files
+      .map(url => `<link${nonceAttr} rel="stylesheet" type="text/css" href="${url}">`)
+      .join('');
   }
 
   //#endregion
 
   //#region Private methods used by PrintBase
 
-  /**
-   * Updates the default values for input elements.
-   *
-   * @param {HTMLCollectionOf<HTMLInputElement>} elements - Collection of input elements.
-   * @private
-   */
-  private updateInputDefaults(elements: HTMLCollectionOf<HTMLInputElement>): void {
-    for (const element of Array.from(elements)) {
-      element['defaultValue'] = element.value;
-      if (element['checked']) element['defaultChecked'] = true;
-    }
-  }
+  private syncFormValues(source: HTMLElement, clone: HTMLElement): void {
+    // Select all form elements
+    const selector = 'input, select, textarea';
+    const sourceEls = source.querySelectorAll(selector);
+    const cloneEls = clone.querySelectorAll(selector);
 
-  /**
-   * Updates the default values for select elements.
-   *
-   * @param {HTMLCollectionOf<HTMLSelectElement>} elements - Collection of select elements.
-   * @private
-   */
-  private updateSelectDefaults(elements: HTMLCollectionOf<HTMLSelectElement>): void {
-    for (const element of Array.from(elements)) {
-      const selectedIdx = element.selectedIndex;
-      if (selectedIdx < 0 || selectedIdx >= element.options.length) continue;
-      const selectedOption: HTMLOptionElement = element.options[selectedIdx];
+    for (let i = 0; i < sourceEls.length; i++) {
+      const srcNode = sourceEls[i] as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+      const cloneNode = cloneEls[i] as typeof srcNode;
 
-      selectedOption.defaultSelected = true;
-    }
-  }
-
-  /**
-   * Updates the default values for textarea elements.
-   *
-   * @param {HTMLCollectionOf<HTMLTextAreaElement>} elements - Collection of textarea elements.
-   * @private
-   */
-  private updateTextAreaDefaults(elements: HTMLCollectionOf<HTMLTextAreaElement>): void {
-    for (const element of Array.from(elements)) {
-      element['defaultValue'] = element.value;
+      if (srcNode instanceof HTMLInputElement) {
+        if (srcNode.type === 'checkbox' || srcNode.type === 'radio') {
+          if (srcNode.checked) cloneNode.setAttribute('checked', '');
+          else cloneNode.removeAttribute('checked'); // Remove if unchecked
+        } else if (srcNode.type === 'file') {
+          // File inputs can't be set programmatically for security
+          continue;
+        } else {
+          cloneNode.setAttribute('value', srcNode.value);
+        }
+      } else if (srcNode instanceof HTMLTextAreaElement) {
+        cloneNode.textContent = srcNode.value; // Use textContent, not innerHTML
+      } else if (srcNode instanceof HTMLSelectElement) {
+        Array.from((cloneNode as HTMLSelectElement).options).forEach((opt, idx) => {
+          if (idx === srcNode.selectedIndex) {
+            opt.setAttribute('selected', '');
+          } else {
+            opt.removeAttribute('selected'); // Remove from non-selected
+          }
+        });
+      }
     }
   }
 
   /**
    * Converts a canvas element to an image and returns its HTML string.
    *
-   * @param {HTMLCanvasElement} element - The canvas element to convert.
-   * @returns {string} - HTML string of the image.
+   * @param {HTMLCanvasElement} canvasElm - The canvas element to convert.
+   * @returns {HTMLImageElement | null} - HTML Element of the image.
    * @private
    */
-  private canvasToImageHtml(element: HTMLCanvasElement): string {
-    const dataUrl = element.toDataURL();
-    return `<img src="${dataUrl}" style="max-width: 100%;">`;
+  private canvasToImageHtml(canvasElm: HTMLCanvasElement): HTMLImageElement | null {
+    try {
+      const dataUrl = canvasElm.toDataURL(); // may throw if canvas is tainted
+      const img = this.document.createElement('img');
+      img.src = dataUrl;
+      img.style.maxWidth = '100%';
+
+      // Preserve displayed size (not just bitmap size)
+      const rect = canvasElm.getBoundingClientRect();
+      if (rect.width) img.style.width = `${rect.width}px`;
+      if (rect.height) img.style.height = `${rect.height}px`;
+
+      return img;
+    } catch (err) {
+      console.warn(`Canvas conversion failed for ${canvasElm}. Likely the canvas is tainted:`, err);
+      // If toDataURL() fails (e.g., tainted canvas), keep canvas as-is in print output
+      return null;
+    }
   }
 
   /**
    * Includes canvas contents in the print section via img tags.
    *
-   * @param {HTMLCollectionOf<HTMLCanvasElement>} elements - Collection of canvas elements.
    * @private
+   * @param source
+   * @param clone
    */
-  private updateCanvasToImage(elements: HTMLCollectionOf<HTMLCanvasElement>): void {
-    for (const canvasElement of Array.from(elements)) {
-      const imgHtml = this.canvasToImageHtml(canvasElement);
-      canvasElement.insertAdjacentHTML('afterend', imgHtml);
-      canvasElement.remove();
+  private updateCanvasToImage(source: HTMLElement, clone: HTMLElement): void {
+    const sourceCanvases = source.querySelectorAll('canvas');
+    const cloneCanvases = clone.querySelectorAll('canvas');
+
+    for (let i = 0; i < sourceCanvases.length; i++) {
+      const srcCanvas = sourceCanvases[i];
+      const cloneCanvas = cloneCanvases[i];
+      const img = this.canvasToImageHtml(srcCanvas);
+      if (img) {
+        cloneCanvas.replaceWith(img);
+      }
     }
   }
 
@@ -147,20 +159,15 @@ export class PrintBase {
    * @private
    */
   private getHtmlContents(printSectionId: string): string | null {
-    const printContents = document.getElementById(printSectionId);
-    if (!printContents) return null;
+    const sourceElm = this.document.getElementById(printSectionId);
+    if (!sourceElm) return null;
 
-    const inputEls = printContents.getElementsByTagName('input');
-    const selectEls = printContents.getElementsByTagName('select');
-    const textAreaEls = printContents.getElementsByTagName('textarea');
-    const canvasEls = printContents.getElementsByTagName('canvas');
+    const cloneElm = sourceElm.cloneNode(true) as HTMLElement; // cloneNode(true) deep clones subtree
 
-    this.updateInputDefaults(inputEls);
-    this.updateSelectDefaults(selectEls);
-    this.updateTextAreaDefaults(textAreaEls);
-    this.updateCanvasToImage(canvasEls);
+    this.syncFormValues(sourceElm, cloneElm);
+    this.updateCanvasToImage(sourceElm, cloneElm);
 
-    return printContents.innerHTML;
+    return cloneElm.innerHTML;
   }
 
   /**
@@ -172,7 +179,7 @@ export class PrintBase {
    */
   private getElementTag(tag: keyof HTMLElementTagNameMap): string {
     const html: string[] = [];
-    const elements = document.getElementsByTagName(tag);
+    const elements = this.document.getElementsByTagName(tag);
     for (let index = 0; index < elements.length; index++) {
       html.push(elements[index].outerHTML);
     }
@@ -241,7 +248,7 @@ export class PrintBase {
     if (this._iframeElement) {
       this._iframeElement.remove();
     }
-    this._iframeElement = document.createElement('iframe');
+    this._iframeElement = this.document.createElement('iframe');
     const iframe = this._iframeElement;
     iframe.id = 'print-iframe-' + new Date().getTime();
     iframe.style.position = 'absolute';
@@ -249,13 +256,14 @@ export class PrintBase {
     iframe.style.top = '-9999px';
     iframe.style.width = '0px';
     iframe.style.height = '0px';
+    iframe.ariaHidden = 'true';
 
-    document.body.appendChild(iframe);
+    this.document.body.appendChild(iframe);
 
     const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!iframeDoc) {
       console.error('Could not access iframe document.');
-      document.body.removeChild(iframe);
+      this.document.body.removeChild(iframe);
       return;
     }
 
@@ -263,7 +271,7 @@ export class PrintBase {
     const success = this.buildPrintDocument(iframeDoc, printOptions);
     if (!success) {
       iframeDoc.close();
-      document.body.removeChild(iframe);
+      this.document.body.removeChild(iframe);
       return;
     }
     iframeDoc.close();
@@ -272,7 +280,7 @@ export class PrintBase {
       const printWindow = iframe.contentWindow;
       if (!printWindow) {
         console.error('Could not access iframe window.');
-        document.body.removeChild(iframe);
+        this.document.body.removeChild(iframe);
         return;
       }
 
@@ -284,7 +292,7 @@ export class PrintBase {
         printWindow.print();
 
         const mediaQueryList = printWindow.matchMedia('print');
-        const listener = (mql: MediaQueryListEvent | MediaQueryList) => {
+        const listener = (mql: MediaQueryListEvent) => {
           if (!mql.matches) {
             this.notifyPrintComplete();
             mediaQueryList.removeEventListener('change', listener);
@@ -329,7 +337,9 @@ export class PrintBase {
     head.appendChild(title);
 
     // Add all head content
-    if (components.baseTag) head.innerHTML += components.baseTag;
+    if (components.baseTag) {
+      head.innerHTML += components.baseTag;
+    }
     head.innerHTML += this.returnStyleValues();
     head.innerHTML += this.returnStyleSheetLinkTags();
     head.innerHTML += components.styles;
