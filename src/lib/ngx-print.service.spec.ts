@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NgxPrintService } from './ngx-print.service';
@@ -52,7 +53,11 @@ describe('NgxPrintService', () => {
   let component: TestNgxPrintServiceComponent;
   let fixture: ComponentFixture<TestNgxPrintServiceComponent>;
 
-  const styleSheet: { [key: string]: { [key: string]: string } } = {
+  const styleSheet: {
+    [key: string]: {
+      [key: string]: string;
+    };
+  } = {
     'h2': { 'border': 'solid 1px' },
     'h1': { 'color': 'red', 'border': '1px solid' },
   };
@@ -75,7 +80,7 @@ describe('NgxPrintService', () => {
   });
 
   it('should print', () => {
-    spyOn(service, 'print');
+    vi.spyOn(service, 'print');
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
@@ -87,7 +92,7 @@ describe('NgxPrintService', () => {
   });
 
   it('should print with title', () => {
-    spyOn(service, 'print');
+    vi.spyOn(service, 'print');
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
@@ -100,7 +105,7 @@ describe('NgxPrintService', () => {
   });
 
   it('should print with existing css', () => {
-    spyOn(service, 'print');
+    vi.spyOn(service, 'print');
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
@@ -113,7 +118,7 @@ describe('NgxPrintService', () => {
   });
 
   it('should print with delay', () => {
-    spyOn(service, 'print');
+    vi.spyOn(service, 'print');
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
@@ -126,7 +131,7 @@ describe('NgxPrintService', () => {
   });
 
   it('should print with previewOnly', () => {
-    spyOn(service, 'print');
+    vi.spyOn(service, 'print');
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
@@ -139,7 +144,7 @@ describe('NgxPrintService', () => {
   });
 
   it('should not close', () => {
-    spyOn(service, 'print');
+    vi.spyOn(service, 'print');
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
@@ -152,7 +157,7 @@ describe('NgxPrintService', () => {
   });
 
   it('should open new tab', () => {
-    spyOn(service, 'print');
+    vi.spyOn(service, 'print');
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
@@ -166,7 +171,7 @@ describe('NgxPrintService', () => {
 
   it('should test the printStyle', () => {
     // Create a spy on the instance's method
-    spyOn(service, 'returnStyleValues').and.callThrough();
+    vi.spyOn(service, 'returnStyleValues');
 
     // Call the function before checking if it has been called
     service.returnStyleValues();
@@ -182,20 +187,40 @@ describe('NgxPrintService', () => {
     expect(service.returnStyleValues()).toEqual('<style nonce="' + testNonce + '"> h2{border:solid 1px} h1{color:red;border:1px solid} </style>');
   });
 
-  it('should emit on print completion (void)', done => {
-    // Subscribe to the observable
-    service.printComplete$.subscribe(() => {
-      expect(true).toBeTrue(); // Just ensure it emits
-      done();
+  it('should emit on print completion (void)', () => {
+    vi.useFakeTimers();
+    const body = {
+      className: '',
+      classList: { contains: () => false },
+      innerHTML: '',
+      appendChild: vi.fn(),
+    };
+    const mockDocument = {
+      body,
+      open: vi.fn(),
+      close: vi.fn(),
+      head: { appendChild: vi.fn(), innerHTML: '' },
+      appendChild: vi.fn(),
+      createElement: (tag: string) => (tag === 'body' ? body : { innerHTML: '', appendChild: vi.fn(), textContent: '' }),
+    };
+    const mockWindow = {
+      document: mockDocument,
+      closed: true,
+      addEventListener: vi.fn(),
+    };
+    vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
+
+    return new Promise<void>(resolve => {
+      service.printComplete$.subscribe(() => {
+        expect(true).toBe(true);
+        vi.useRealTimers();
+        resolve();
+      });
+      const customPrintOptions: PrintOptions = new PrintOptions({
+        printSectionId: 'print-section',
+      });
+      component.printMe(customPrintOptions);
+      vi.advanceTimersByTime(600);
     });
-
-    const customPrintOptions: PrintOptions = new PrintOptions({
-      printSectionId: 'print-section',
-    });
-
-    component.printMe(customPrintOptions);
-
-    // Simulate the popup sending the print complete message
-    window.dispatchEvent(new MessageEvent('message', { data: { type: 'print-complete' } }));
   });
 });

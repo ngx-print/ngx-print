@@ -14,14 +14,13 @@
           "options": {
             "tsConfig": "tsconfig.lib.json",
             "project": "ng-package.json"
+          },
+          "configurations": {
+            "development": {}
           }
         },
         "test": {
-          "builder": "@angular/build:karma",
-          "options": {
-            "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js"
-          }
+          "builder": "@angular/build:unit-test"
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
