@@ -1,5 +1,6 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Component, DebugElement, provideZonelessChangeDetection } from '@angular/core';
-import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NgxPrintDirective } from './ngx-print.directive';
 
@@ -46,7 +47,11 @@ describe('NgxPrintDirective', () => {
   let fixture: ComponentFixture<TestNgxPrintComponent>;
 
   // To change this later, so it'll depend on TestNgxPrintComponent
-  const styleSheet: { [key: string]: { [key: string]: string } } = {
+  const styleSheet: {
+    [key: string]: {
+      [key: string]: string;
+    };
+  } = {
     'h2': { 'border': 'solid 1px' },
     'h1': { 'color': 'red', 'border': '1px solid' },
   };
@@ -79,7 +84,7 @@ describe('NgxPrintDirective', () => {
     const directive = buttonEl.injector.get(NgxPrintDirective);
 
     // Create a spy on the instance's method
-    spyOn(directive, 'returnStyleValues').and.callThrough();
+    vi.spyOn(directive, 'returnStyleValues');
 
     // Call the function before checking if it has been called
     directive.returnStyleValues();
@@ -97,43 +102,71 @@ describe('NgxPrintDirective', () => {
   });
 
   it(`should popup a new window`, () => {
-    spyOn(window, 'open').and.callThrough();
+    vi.spyOn(window, 'open');
     // simulate click
     buttonEl.triggerEventHandler('click', {});
     expect(window.open).toHaveBeenCalled();
   });
 
   it('should apply class list to body element in new window', () => {
-    const windowOpenSpy = spyOn(window, 'open').and.callThrough();
+    const body = {
+      className: '',
+      classList: { contains: (c: string) => body.className.split(' ').includes(c) },
+      innerHTML: '',
+      appendChild: vi.fn(),
+    };
+    const mockDocument = {
+      body,
+      open: vi.fn(),
+      close: vi.fn(),
+      head: { appendChild: vi.fn(), innerHTML: '' },
+      appendChild: vi.fn(),
+      createElement: (tag: string) => (tag === 'body' ? body : { innerHTML: '', appendChild: vi.fn(), textContent: '' }),
+    };
+    const mockWindow = {
+      document: mockDocument,
+      closed: true,
+      addEventListener: vi.fn(),
+    };
+    vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
 
-    // Simulate click
     buttonEl.triggerEventHandler('click', {});
 
-    const newWindow = windowOpenSpy.calls.mostRecent().returnValue;
-
-    // Ensure newWindow is not null before accessing properties
-    if (newWindow && newWindow.document && newWindow.document.body) {
-      expect(newWindow.document.body.classList.contains('theme-dark')).toBeTrue();
-    } else {
-      fail('Window was not opened or document/body is not accessible.');
-    }
+    expect(mockDocument.body.classList.contains('theme-dark')).toBe(true);
   });
 
-  it('should emit printComplete when printing finishes', done => {
-    let emitted = false;
+  it('should emit printComplete when printing finishes', () => {
+    vi.useFakeTimers();
+    const body = {
+      className: '',
+      classList: { contains: () => false },
+      innerHTML: '',
+      appendChild: vi.fn(),
+    };
+    const mockDocument = {
+      body,
+      open: vi.fn(),
+      close: vi.fn(),
+      head: { appendChild: vi.fn(), innerHTML: '' },
+      appendChild: vi.fn(),
+      createElement: (tag: string) => (tag === 'body' ? body : { innerHTML: '', appendChild: vi.fn(), textContent: '' }),
+    };
+    const mockWindow = {
+      document: mockDocument,
+      closed: true,
+      addEventListener: vi.fn(),
+    };
+    vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
 
-    const directive = buttonEl.injector.get(NgxPrintDirective);
-
-    directive.printCompleted.subscribe(() => {
-      emitted = true;
-      expect(emitted).toBeTrue();
-      done();
+    return new Promise<void>(resolve => {
+      const directive = buttonEl.injector.get(NgxPrintDirective);
+      directive.printCompleted.subscribe(() => {
+        expect(true).toBe(true);
+        vi.useRealTimers();
+        resolve();
+      });
+      buttonEl.triggerEventHandler('click', null);
+      vi.advanceTimersByTime(600);
     });
-
-    // Trigger the print
-    buttonEl.triggerEventHandler('click', null);
-
-    // Simulate popup posting "print-complete" message back to opener
-    window.dispatchEvent(new MessageEvent('message', { data: { type: 'print-complete' } }));
   });
 });
