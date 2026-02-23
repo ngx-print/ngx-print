@@ -1,17 +1,17 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "10:00"
-      timezone: "America/New_York"
+      interval: 'weekly'
+      day: 'monday'
+      time: '10:00'
+      timezone: 'America/New_York'
     open-pull-requests-limit: 5
     groups:
       npm-dependencies:
         patterns:
-          - "*"
+          - '*'
     ignore:
-    - dependency-name: "*"
-      update-types: ["version-update:semver-major"]
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']

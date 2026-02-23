@@ -7,7 +7,7 @@ This directive makes printing your HTML sections smooth and easy in your Angular
 ## Dependencies
 
 | ngx-print | Angular        |
-|-----------|----------------|
+| --------- | -------------- |
 | 1.2.1     | 7.0.0 - 14.1.0 |
 | 1.3.x     | 15.0.0         |
 | 1.4.x     | 16.0.0         |
@@ -227,16 +227,16 @@ closeWindow: boolean = true;
 printDelay: number = 0;
 ```
 
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `printSectionId` | `string` | `''` | **Required.** The `id` of the element to print. |
-| `printTitle` | `string` | `''` | Title shown in the print document. |
-| `useExistingCss` | `boolean` | `false` | Copies `<style>` and `<link>` tags from the host page. |
-| `bodyClass` | `string` | `''` | CSS class(es) applied to the print `<body>`. |
-| `printMethod` | `'window' \| 'tab' \| 'iframe'` | `'window'` | Controls how printing is triggered: popup window, new tab, or silent iframe. |
-| `previewOnly` | `boolean` | `false` | Opens the print target without triggering the print dialog. |
-| `closeWindow` | `boolean` | `true` | Closes the popup window after printing (ignored for `iframe`). |
-| `printDelay` | `number` | `0` | Delay in milliseconds before the print dialog is opened. |
+| Property         | Type                            | Default    | Description                                                                  |
+| ---------------- | ------------------------------- | ---------- | ---------------------------------------------------------------------------- |
+| `printSectionId` | `string`                        | `''`       | **Required.** The `id` of the element to print.                              |
+| `printTitle`     | `string`                        | `''`       | Title shown in the print document.                                           |
+| `useExistingCss` | `boolean`                       | `false`    | Copies `<style>` and `<link>` tags from the host page.                       |
+| `bodyClass`      | `string`                        | `''`       | CSS class(es) applied to the print `<body>`.                                 |
+| `printMethod`    | `'window' \| 'tab' \| 'iframe'` | `'window'` | Controls how printing is triggered: popup window, new tab, or silent iframe. |
+| `previewOnly`    | `boolean`                       | `false`    | Opens the print target without triggering the print dialog.                  |
+| `closeWindow`    | `boolean`                       | `true`     | Closes the popup window after printing (ignored for `iframe`).               |
+| `printDelay`     | `number`                        | `0`        | Delay in milliseconds before the print dialog is opened.                     |
 
 ### Setting PrintStyles or StyleSheets
 

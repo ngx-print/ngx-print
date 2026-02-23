@@ -23,4 +23,3 @@ jobs:
           days-before-stale: 30
           days-before-close: 7
           exempt-issue-labels: 'inspecting'
-          
