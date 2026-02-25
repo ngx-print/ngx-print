@@ -2,13 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["node"]
+    "types": ["node"],
+    "skipLibCheck": true
   },
-  "files": [
-  ],
-  "include": [
-      "**/*.spec.ts",
-      "**/*.d.ts",
-      "**/*.ts"
-  ]
+  "files": [],
+  "include": ["**/*.spec.ts", "**/*.d.ts", "**/*.ts"]
 }
