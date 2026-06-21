@@ -1,7 +1,6 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "esModuleInterop": true,
@@ -18,10 +17,10 @@
     ],
     "paths": {
       "ngx-print": [
-        "dist/ngx-print"
+        "./dist/ngx-print"
       ],
       "ngx-print/*": [
-        "dist/ngx-print/*"
+        "./dist/ngx-print/*"
       ]
     }
   },
