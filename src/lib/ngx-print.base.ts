@@ -2,6 +2,13 @@ import { CSP_NONCE, DOCUMENT, inject, Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { PrintOptions } from './print-options';
 
+/** For example:
+ * {
+ *     'h2': { 'border': 'solid 1px' },
+ *     'h1': { 'color': 'red', 'border': '1px solid' },
+ *   */
+export type PrintStyle = Record<string, Record<string, string>>;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -11,7 +18,7 @@ export class PrintBase {
 
   private _iframeElement: HTMLIFrameElement | undefined;
   private _printStyle: string[] = [];
-  private _styleSheetFile: string = '';
+  private _styleSheetFile = '';
   protected printComplete = new Subject<void>();
 
   //#region Getters and Setters
@@ -21,7 +28,7 @@ export class PrintBase {
    * @param {Object} values - Key-value pairs representing print styles.
    * @protected
    */
-  protected setPrintStyle(values: { [key: string]: { [key: string]: string } }) {
+  protected setPrintStyle(values: PrintStyle) {
     this._printStyle = [];
     for (const key of Object.keys(values)) {
       this._printStyle.push((key + JSON.stringify(values[key])).replace(/['"]+/g, ''));
@@ -180,8 +187,8 @@ export class PrintBase {
   private getElementTag(tag: keyof HTMLElementTagNameMap): string {
     const html: string[] = [];
     const elements = this.document.getElementsByTagName(tag);
-    for (let index = 0; index < elements.length; index++) {
-      html.push(elements[index].outerHTML);
+    for (const el of Array.from(elements)) {
+      html.push((el as Element).outerHTML);
     }
     return html.join('\r\n');
   }

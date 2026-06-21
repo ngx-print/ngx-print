@@ -1,12 +1,12 @@
 export class PrintOptions {
-  printSectionId: string = '';
-  printTitle: string = '';
-  useExistingCss: boolean = false;
-  bodyClass: string = '';
+  printSectionId = '';
+  printTitle = '';
+  useExistingCss = false;
+  bodyClass = '';
   printMethod: 'window' | 'tab' | 'iframe' = 'window';
-  previewOnly: boolean = false;
-  closeWindow: boolean = true;
-  printDelay: number = 0;
+  previewOnly = false;
+  closeWindow = true;
+  printDelay = 0;
 
   constructor(options?: Partial<PrintOptions>) {
     if (options) {

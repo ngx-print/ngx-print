@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgxPrintService } from './ngx-print.service';
 import { Component, CSP_NONCE, inject, provideZonelessChangeDetection } from '@angular/core';
 import { PrintOptions } from './print-options';
+import { PrintStyle } from './ngx-print.base';
 
 const testNonce = 'dummy-nonce-value';
 
@@ -53,11 +54,7 @@ describe('NgxPrintService', () => {
   let component: TestNgxPrintServiceComponent;
   let fixture: ComponentFixture<TestNgxPrintServiceComponent>;
 
-  const styleSheet: {
-    [key: string]: {
-      [key: string]: string;
-    };
-  } = {
+  const styleSheet: PrintStyle = {
     'h2': { 'border': 'solid 1px' },
     'h1': { 'color': 'red', 'border': '1px solid' },
   };
