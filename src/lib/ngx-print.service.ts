@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { PrintBase, PrintStyle } from './ngx-print.base';
 import { PrintOptions } from './print-options';
 
@@ -10,9 +10,7 @@ import { PrintOptions } from './print-options';
  * @class NgxPrintService
  * @extends {PrintBase}
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class NgxPrintService extends PrintBase {
   printComplete$ = this.printComplete.asObservable();
 

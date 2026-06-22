@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Component, DebugElement, provideZonelessChangeDetection } from '@angular/core';
+import { Component, DebugElement, provideZonelessChangeDetection, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NgxPrintDirective } from './ngx-print.directive';
@@ -36,11 +36,13 @@ import { PrintStyle } from './ngx-print.base';
         </tr>
       </table>
     </div>
-    <button printSectionId="print-section" ngxPrint bodyClass="theme-dark">Print</button>
+    <button [printStyle]="printStyle()" printSectionId="print-section" ngxPrint bodyClass="theme-dark">Print</button>
   `,
   imports: [NgxPrintDirective],
 })
-class TestNgxPrintComponent {}
+class TestNgxPrintComponent {
+  readonly printStyle = signal<PrintStyle>({});
+}
 
 describe('NgxPrintDirective', () => {
   let buttonEl: DebugElement;
@@ -91,9 +93,13 @@ describe('NgxPrintDirective', () => {
     expect(directive.returnStyleValues).toHaveBeenCalled();
   });
 
-  it('should returns a string from array of objects', () => {
+  it('should returns a string from array of objects', async () => {
+    vi.spyOn(window, 'open');
+    component.printStyle.set(styleSheet);
+    await fixture.whenStable();
+
     const directive = buttonEl.injector.get(NgxPrintDirective);
-    directive.printStyle = styleSheet;
+    buttonEl.triggerEventHandler('click', {});
 
     // Ensure the print styles are correctly formatted in the document
     expect(directive.returnStyleValues()).toEqual('<style> h2{border:solid 1px} h1{color:red;border:1px solid} </style>');
