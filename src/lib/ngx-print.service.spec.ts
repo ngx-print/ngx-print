@@ -184,6 +184,17 @@ describe('NgxPrintService', () => {
     expect(service.returnStyleValues()).toEqual('<style nonce="' + testNonce + '"> h2{border:solid 1px} h1{color:red;border:1px solid} </style>');
   });
 
+  it('should preserve quotes and commas within style values', () => {
+    service.printStyle = {
+      'li::before': { content: '"→"' },
+      'p': { 'font-family': '"Helvetica Neue", Arial, sans-serif', color: 'red' },
+    };
+
+    expect(service.returnStyleValues()).toEqual(
+      '<style nonce="' + testNonce + '"> li::before{content:"→"} p{font-family:"Helvetica Neue", Arial, sans-serif;color:red} </style>',
+    );
+  });
+
   it('should emit on print completion (void)', () => {
     vi.useFakeTimers();
     const body = {

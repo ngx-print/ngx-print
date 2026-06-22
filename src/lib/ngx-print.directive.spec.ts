@@ -105,6 +105,22 @@ describe('NgxPrintDirective', () => {
     expect(directive.returnStyleValues()).toEqual('<style> h2{border:solid 1px} h1{color:red;border:1px solid} </style>');
   });
 
+  it('should preserve quotes and commas within style values', async () => {
+    vi.spyOn(window, 'open');
+    component.printStyle.set({
+      'li::before': { content: '"→"' },
+      'p': { 'font-family': '"Helvetica Neue", Arial, sans-serif', color: 'red' },
+    });
+    await fixture.whenStable();
+
+    const directive = buttonEl.injector.get(NgxPrintDirective);
+    buttonEl.triggerEventHandler('click', {});
+
+    expect(directive.returnStyleValues()).toEqual(
+      '<style> li::before{content:"→"} p{font-family:"Helvetica Neue", Arial, sans-serif;color:red} </style>',
+    );
+  });
+
   it(`should popup a new window`, () => {
     vi.spyOn(window, 'open');
     // simulate click

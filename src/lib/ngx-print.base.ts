@@ -28,22 +28,24 @@ export class PrintBase {
    */
   protected setPrintStyle(values: PrintStyle) {
     this._printStyle = [];
-    for (const key of Object.keys(values)) {
-      this._printStyle.push((key + JSON.stringify(values[key])).replace(/['"]+/g, ''));
+    for (const [selector, declarations] of Object.entries(values)) {
+      // Built declaration-by-declaration (rather than via JSON.stringify + a quote-stripping
+      // regex) so that quotes and commas that are part of a CSS value (e.g. quoted font names,
+      // comma-separated font-family fallback lists) survive instead of being stripped/mangled.
+      const body = Object.entries(declarations)
+        .map(([property, value]) => `${property}:${value}`)
+        .join(';');
+      this._printStyle.push(`${selector}{${body}}`);
     }
   }
 
   /**
-   *
-   *
    * @returns the string that create the stylesheet which will be injected
    * later within <style></style> tag.
-   *
-   * -join/replace to transform an array objects to css-styled string
    */
   public returnStyleValues(): string {
     const styleNonce = this.nonce ? ` nonce="${this.nonce}"` : '';
-    return `<style${styleNonce}> ${this._printStyle.join(' ').replace(/,/g, ';')} </style>`;
+    return `<style${styleNonce}> ${this._printStyle.join(' ')} </style>`;
   }
 
   /**
