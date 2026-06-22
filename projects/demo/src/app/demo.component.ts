@@ -13,11 +13,7 @@ export class DemoComponent {
   private _printService = inject(NgxPrintService);
   private _fb = inject(FormBuilder);
 
-  protected readonly printMethods = [
-    'iframe',
-    'window',
-    'tab',
-  ] as const;
+  protected readonly printMethods = ['iframe', 'window', 'tab'] as const;
 
   canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('drawingCanvas');
 
@@ -25,8 +21,7 @@ export class DemoComponent {
     printMethod: this._fb.nonNullable.control<typeof PrintOptions.prototype.printMethod>('iframe'),
     printTitle: this._fb.nonNullable.control<string>('Demo Component Print'),
     useExistingCss: this._fb.nonNullable.control<boolean>(true),
-    }
-  )
+  });
 
   demoform = this._fb.group({
     name: ['Angular Developer'],
@@ -47,7 +42,7 @@ export class DemoComponent {
       printSectionId: 'print-demo-section',
       printTitle: this.optionForm.controls.printTitle.value!,
       printMethod: this.optionForm.controls.printMethod.value,
-      useExistingCss: this.optionForm.controls.useExistingCss.value
+      useExistingCss: this.optionForm.controls.useExistingCss.value,
     });
   }
 

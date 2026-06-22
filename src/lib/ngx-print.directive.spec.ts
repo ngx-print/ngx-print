@@ -3,6 +3,7 @@ import { Component, DebugElement, provideZonelessChangeDetection } from '@angula
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NgxPrintDirective } from './ngx-print.directive';
+import { PrintStyle } from './ngx-print.base';
 
 @Component({
   template: `
@@ -35,7 +36,7 @@ import { NgxPrintDirective } from './ngx-print.directive';
         </tr>
       </table>
     </div>
-    <button printSectionId="print-section" ngxPrint bodyClass="theme-dark"></button>
+    <button printSectionId="print-section" ngxPrint bodyClass="theme-dark">Print</button>
   `,
   imports: [NgxPrintDirective],
 })
@@ -47,11 +48,7 @@ describe('NgxPrintDirective', () => {
   let fixture: ComponentFixture<TestNgxPrintComponent>;
 
   // To change this later, so it'll depend on TestNgxPrintComponent
-  const styleSheet: {
-    [key: string]: {
-      [key: string]: string;
-    };
-  } = {
+  const styleSheet: PrintStyle = {
     'h2': { 'border': 'solid 1px' },
     'h1': { 'color': 'red', 'border': '1px solid' },
   };
@@ -78,6 +75,7 @@ describe('NgxPrintDirective', () => {
   it('should create an instance', () => {
     const directive = buttonEl.injector.get(NgxPrintDirective);
     expect(directive).toBeTruthy();
+    expect(component).toBeTruthy();
   });
 
   it('should test the @Input printStyle', () => {

@@ -1,5 +1,5 @@
 import { Directive, Input, output } from '@angular/core';
-import { PrintBase } from './ngx-print.base';
+import { PrintBase, PrintStyle } from './ngx-print.base';
 import { PrintOptions } from './print-options';
 import { take } from 'rxjs';
 
@@ -88,7 +88,7 @@ export class NgxPrintDirective extends PrintBase {
    * @memberof NgxPrintDirective
    */
   @Input()
-  set printStyle(values: { [key: string]: { [key: string]: string } }) {
+  set printStyle(values: PrintStyle) {
     super.setPrintStyle(values);
   }
 

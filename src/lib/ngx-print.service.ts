@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { PrintBase } from './ngx-print.base';
+import { PrintBase, PrintStyle } from './ngx-print.base';
 import { PrintOptions } from './print-options';
 
 /**
@@ -35,7 +35,7 @@ export class NgxPrintService extends PrintBase {
    * @memberof NgxPrintService
    * @setter
    */
-  set printStyle(values: { [key: string]: { [key: string]: string } }) {
+  set printStyle(values: PrintStyle) {
     super.setPrintStyle(values);
   }
 
