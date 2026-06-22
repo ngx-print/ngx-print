@@ -1,3 +1,7 @@
+# 22.0.0 (2026-06-22)
+
+- Support for Angular 22.
+
 # 21.1.0 (2026-01-07)
 
 ### New features

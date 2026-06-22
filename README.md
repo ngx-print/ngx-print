@@ -18,6 +18,7 @@ This directive makes printing your HTML sections smooth and easy in your Angular
 | 3.x.x     | 19.0.0         |
 | 20.x.x    | 20.0.0         |
 | 21.x.x    | 21.0.0         |
+| 22.x.x    | 22.0.0         |
 
 ## Version Alignment Notice
 
