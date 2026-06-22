@@ -9,6 +9,12 @@ import { PrintOptions } from './print-options';
  *   */
 export type PrintStyle = Record<string, Record<string, string>>;
 
+/**
+ * Either a {@link PrintStyle} object, or a raw CSS string (e.g. `'h1 { color: red; }'`)
+ * to be injected into the print document's <style> tag as-is.
+ */
+export type PrintStyleInput = PrintStyle | string;
+
 @Service()
 export class PrintBase {
   private document = inject(DOCUMENT);
@@ -23,10 +29,15 @@ export class PrintBase {
   /**
    * Sets the print styles based on the provided values.
    *
-   * @param {Object} values - Key-value pairs representing print styles.
+   * @param values - Either a key-value pairs object representing print styles, or a raw CSS string.
    * @protected
    */
-  protected setPrintStyle(values: PrintStyle) {
+  protected setPrintStyle(values: PrintStyleInput) {
+    if (typeof values === 'string') {
+      this._printStyle = values ? [values] : [];
+      return;
+    }
+
     this._printStyle = [];
     for (const [selector, declarations] of Object.entries(values)) {
       // Built declaration-by-declaration (rather than via JSON.stringify + a quote-stripping

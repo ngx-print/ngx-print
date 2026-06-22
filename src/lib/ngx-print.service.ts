@@ -1,5 +1,5 @@
 import { Service } from '@angular/core';
-import { PrintBase, PrintStyle } from './ngx-print.base';
+import { PrintBase, PrintStyleInput } from './ngx-print.base';
 import { PrintOptions } from './print-options';
 
 /**
@@ -29,11 +29,11 @@ export class NgxPrintService extends PrintBase {
   /**
    * Sets the print style for the printing process.
    *
-   * @param {{ [key: string]: { [key: string]: string } }} values - A dictionary representing the print styles.
+   * @param values - Either a dictionary representing the print styles, or a raw CSS string.
    * @memberof NgxPrintService
    * @setter
    */
-  set printStyle(values: PrintStyle) {
+  set printStyle(values: PrintStyleInput) {
     super.setPrintStyle(values);
   }
 

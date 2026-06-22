@@ -1,5 +1,5 @@
 import { Directive, input, output } from '@angular/core';
-import { PrintBase, PrintStyle } from './ngx-print.base';
+import { PrintBase, PrintStyleInput } from './ngx-print.base';
 import { PrintOptions } from './print-options';
 import { take } from 'rxjs';
 
@@ -42,7 +42,7 @@ export class NgxPrintDirective extends PrintBase {
    */
   readonly printMethod = input<PrintOptions['printMethod']>('window');
 
-  readonly printStyle = input<PrintStyle>({});
+  readonly printStyle = input<PrintStyleInput>({});
 
   readonly styleSheetFile = input('');
 

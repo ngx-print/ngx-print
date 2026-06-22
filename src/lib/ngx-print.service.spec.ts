@@ -195,6 +195,19 @@ describe('NgxPrintService', () => {
     );
   });
 
+  it('should accept a raw CSS string for printStyle', () => {
+    service.printStyle = 'h1, h2 { color: red; }';
+
+    expect(service.returnStyleValues()).toEqual('<style nonce="' + testNonce + '"> h1, h2 { color: red; } </style>');
+  });
+
+  it('should clear the style when printStyle is set to an empty string', () => {
+    service.printStyle = 'h1 { color: red; }';
+    service.printStyle = '';
+
+    expect(service.returnStyleValues()).toEqual('<style nonce="' + testNonce + '">  </style>');
+  });
+
   it('should emit on print completion (void)', () => {
     vi.useFakeTimers();
     const body = {

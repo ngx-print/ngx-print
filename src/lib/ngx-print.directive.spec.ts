@@ -3,7 +3,7 @@ import { Component, DebugElement, provideZonelessChangeDetection, signal } from 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NgxPrintDirective } from './ngx-print.directive';
-import { PrintStyle } from './ngx-print.base';
+import { PrintStyle, PrintStyleInput } from './ngx-print.base';
 
 @Component({
   template: `
@@ -41,7 +41,7 @@ import { PrintStyle } from './ngx-print.base';
   imports: [NgxPrintDirective],
 })
 class TestNgxPrintComponent {
-  readonly printStyle = signal<PrintStyle>({});
+  readonly printStyle = signal<PrintStyleInput>({});
 }
 
 describe('NgxPrintDirective', () => {
@@ -119,6 +119,17 @@ describe('NgxPrintDirective', () => {
     expect(directive.returnStyleValues()).toEqual(
       '<style> li::before{content:"→"} p{font-family:"Helvetica Neue", Arial, sans-serif;color:red} </style>',
     );
+  });
+
+  it('should accept a raw CSS string for printStyle', async () => {
+    vi.spyOn(window, 'open');
+    component.printStyle.set('h1, h2 { color: red; }');
+    await fixture.whenStable();
+
+    const directive = buttonEl.injector.get(NgxPrintDirective);
+    buttonEl.triggerEventHandler('click', {});
+
+    expect(directive.returnStyleValues()).toEqual('<style> h1, h2 { color: red; } </style>');
   });
 
   it(`should popup a new window`, () => {
