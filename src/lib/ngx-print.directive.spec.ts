@@ -7,7 +7,7 @@ import { PrintStyle, PrintStyleInput } from './ngx-print.base';
 
 @Component({
   template: `
-    <div id="print-section">
+    <div id="print-section" style="border: 2px solid red;">
       <h1>Welcome to ngx-print</h1>
       <img
         width="300"
@@ -164,6 +164,35 @@ describe('NgxPrintDirective', () => {
     buttonEl.triggerEventHandler('click', {});
 
     expect(mockDocument.body.classList.contains('theme-dark')).toBe(true);
+  });
+
+  it('should preserve the print section root element attributes (e.g. style)', () => {
+    const body = {
+      className: '',
+      classList: { contains: () => false },
+      innerHTML: '',
+      appendChild: vi.fn(),
+    };
+    const mockDocument = {
+      body,
+      open: vi.fn(),
+      close: vi.fn(),
+      head: { appendChild: vi.fn(), innerHTML: '' },
+      appendChild: vi.fn(),
+      createElement: (tag: string) => (tag === 'body' ? body : { innerHTML: '', appendChild: vi.fn(), textContent: '' }),
+    };
+    const mockWindow = {
+      document: mockDocument,
+      closed: true,
+      addEventListener: vi.fn(),
+    };
+    vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
+
+    buttonEl.triggerEventHandler('click', {});
+
+    // The print section's own id and inline style must survive (not just its children's).
+    expect(mockDocument.body.innerHTML).toContain('id="print-section"');
+    expect(mockDocument.body.innerHTML).toContain('border: 2px solid red');
   });
 
   it('should emit printComplete when printing finishes', () => {

@@ -189,7 +189,7 @@ export class PrintBase {
     this.syncFormValues(sourceElm, cloneElm);
     this.updateCanvasToImage(sourceElm, cloneElm);
 
-    return cloneElm.innerHTML;
+    return cloneElm.outerHTML;
   }
 
   /**
