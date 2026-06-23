@@ -1,4 +1,4 @@
-import { Directive, Input, output } from '@angular/core';
+import { Directive, input, output } from '@angular/core';
 import { PrintBase, PrintStyle } from './ngx-print.base';
 import { PrintOptions } from './print-options';
 import { take } from 'rxjs';
@@ -11,107 +11,62 @@ import { take } from 'rxjs';
   },
 })
 export class NgxPrintDirective extends PrintBase {
-  private printOptions = new PrintOptions();
-
   /**
    * Prevents the print dialog from opening on the window
-   *
-   * @memberof NgxPrintDirective
    */
-  @Input() set previewOnly(value: boolean) {
-    this.printOptions = { ...this.printOptions, previewOnly: value };
-  }
+  readonly previewOnly = input(false);
 
-  /**
-   *
-   *
-   * @memberof NgxPrintDirective
-   */
-  @Input() set printSectionId(value: string) {
-    this.printOptions = { ...this.printOptions, printSectionId: value };
-  }
+  readonly printSectionId = input('');
 
-  /**
-   *
-   *
-   * @memberof NgxPrintDirective
-   */
-  @Input() set printTitle(value: string) {
-    this.printOptions = { ...this.printOptions, printTitle: value };
-  }
+  readonly printTitle = input('');
 
-  /**
-   *
-   *
-   * @memberof NgxPrintDirective
-   */
-  @Input() set useExistingCss(value: boolean) {
-    this.printOptions = { ...this.printOptions, useExistingCss: value };
-  }
+  readonly useExistingCss = input(false);
 
   /**
    * A delay in milliseconds to force the print dialog to wait before opened. Default: 0
-   *
-   * @memberof NgxPrintDirective
    */
-  @Input() set printDelay(value: number) {
-    this.printOptions = { ...this.printOptions, printDelay: value };
-  }
+  readonly printDelay = input(0);
 
   /**
    * Whether to close the window after print() returns.
-   *
    */
-  @Input() set closeWindow(value: boolean) {
-    this.printOptions = { ...this.printOptions, closeWindow: value };
-  }
+  readonly closeWindow = input(true);
 
   /**
    * Class attribute to apply to the body element.
-   *
    */
-  @Input() set bodyClass(value: string) {
-    this.printOptions = { ...this.printOptions, bodyClass: value };
-  }
+  readonly bodyClass = input('');
 
   /**
    * Which PrintMethod (iframe/window/tab) to use.
-   *
    */
-  @Input() set printMethod(value: typeof PrintOptions.prototype.printMethod) {
-    this.printOptions = { ...this.printOptions, printMethod: value };
-  }
+  readonly printMethod = input<PrintOptions['printMethod']>('window');
 
-  /**
-   *
-   *
-   * @memberof NgxPrintDirective
-   */
-  @Input()
-  set printStyle(values: PrintStyle) {
-    super.setPrintStyle(values);
-  }
+  readonly printStyle = input<PrintStyle>({});
 
-  /**
-   * @memberof NgxPrintDirective
-   * @param cssList
-   */
-  @Input()
-  set styleSheetFile(cssList: string) {
-    super.setStyleSheetFile(cssList);
-  }
+  readonly styleSheetFile = input('');
 
-  /**
-   *
-   *
-   * @memberof NgxPrintDirective
-   */
+  readonly printCompleted = output<void>();
+
   public override print(): void {
-    super.print(this.printOptions);
+    // Inputs carry side effects on PrintBase's internal style state, so they're applied
+    // synchronously here rather than via effect() (effects shouldn't propagate state).
+    super.setPrintStyle(this.printStyle());
+    super.setStyleSheetFile(this.styleSheetFile());
+
+    super.print({
+      printSectionId: this.printSectionId(),
+      printTitle: this.printTitle(),
+      useExistingCss: this.useExistingCss(),
+      bodyClass: this.bodyClass(),
+      printMethod: this.printMethod(),
+      previewOnly: this.previewOnly(),
+      closeWindow: this.closeWindow(),
+      printDelay: this.printDelay(),
+    });
+
     this.printComplete.pipe(take(1)).subscribe(() => {
       this.printCompleted.emit();
     });
   }
-
-  readonly printCompleted = output<void>();
 }

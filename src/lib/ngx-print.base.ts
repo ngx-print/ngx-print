@@ -1,4 +1,4 @@
-import { CSP_NONCE, DOCUMENT, inject, Injectable } from '@angular/core';
+import { CSP_NONCE, DOCUMENT, inject, Service } from '@angular/core';
 import { Subject } from 'rxjs';
 import { PrintOptions } from './print-options';
 
@@ -9,9 +9,7 @@ import { PrintOptions } from './print-options';
  *   */
 export type PrintStyle = Record<string, Record<string, string>>;
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PrintBase {
   private document = inject(DOCUMENT);
   private nonce = inject(CSP_NONCE, { optional: true });
@@ -65,6 +63,10 @@ export class PrintBase {
    */
   // prettier-ignore
   protected setStyleSheetFile(cssList: string): void {
+    if (!cssList) {
+      this._styleSheetFile = '';
+      return;
+    }
     const files = cssList.split(',').map(f => f.trim());
     const nonceAttr = this.nonce ? ` nonce="${this.nonce}"` : '';
     this._styleSheetFile = files
