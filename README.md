@@ -102,6 +102,14 @@ export class PrintExampleComponent {}
 
 Here some simple styles were added to every `h1` & `h2` tags within the `div` where `print-section` is tagged to its `id` attribute.
 
+`printStyle` also accepts a raw CSS string, which is injected into the print document's `<style>` tag as-is. This is useful for anything the object form can't express well, such as multiple selectors per rule, media queries, or `!important`:
+
+```html
+<button printStyle="h1, h2 { color: red; } @media print { .no-print { display: none; } }"
+        printSectionId="print-section"
+        ngxPrint>print</button>
+```
+
 - If you would like to use your existing CSS with media print you can add the `useExistingCss` attribute:
 
 ```html
@@ -246,6 +254,9 @@ printDelay: number = 0;
 ```ts
 // Optional: CSS as a key-value pair
 this.printService.printStyle = styleSheet;
+
+// Optional: CSS as a raw string
+this.printService.printStyle = 'h1, h2 { color: red; }';
 
 // Optional: path to a CSS file
 this.printService.styleSheetFile = fileLocation;

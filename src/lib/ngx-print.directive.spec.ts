@@ -3,11 +3,11 @@ import { Component, DebugElement, provideZonelessChangeDetection, signal } from 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NgxPrintDirective } from './ngx-print.directive';
-import { PrintStyle } from './ngx-print.base';
+import { PrintStyle, PrintStyleInput } from './ngx-print.base';
 
 @Component({
   template: `
-    <div id="print-section">
+    <div id="print-section" style="border: 2px solid red;">
       <h1>Welcome to ngx-print</h1>
       <img
         width="300"
@@ -41,7 +41,7 @@ import { PrintStyle } from './ngx-print.base';
   imports: [NgxPrintDirective],
 })
 class TestNgxPrintComponent {
-  readonly printStyle = signal<PrintStyle>({});
+  readonly printStyle = signal<PrintStyleInput>({});
 }
 
 describe('NgxPrintDirective', () => {
@@ -105,6 +105,33 @@ describe('NgxPrintDirective', () => {
     expect(directive.returnStyleValues()).toEqual('<style> h2{border:solid 1px} h1{color:red;border:1px solid} </style>');
   });
 
+  it('should preserve quotes and commas within style values', async () => {
+    vi.spyOn(window, 'open');
+    component.printStyle.set({
+      'li::before': { content: '"→"' },
+      'p': { 'font-family': '"Helvetica Neue", Arial, sans-serif', color: 'red' },
+    });
+    await fixture.whenStable();
+
+    const directive = buttonEl.injector.get(NgxPrintDirective);
+    buttonEl.triggerEventHandler('click', {});
+
+    expect(directive.returnStyleValues()).toEqual(
+      '<style> li::before{content:"→"} p{font-family:"Helvetica Neue", Arial, sans-serif;color:red} </style>',
+    );
+  });
+
+  it('should accept a raw CSS string for printStyle', async () => {
+    vi.spyOn(window, 'open');
+    component.printStyle.set('h1, h2 { color: red; }');
+    await fixture.whenStable();
+
+    const directive = buttonEl.injector.get(NgxPrintDirective);
+    buttonEl.triggerEventHandler('click', {});
+
+    expect(directive.returnStyleValues()).toEqual('<style> h1, h2 { color: red; } </style>');
+  });
+
   it(`should popup a new window`, () => {
     vi.spyOn(window, 'open');
     // simulate click
@@ -137,6 +164,35 @@ describe('NgxPrintDirective', () => {
     buttonEl.triggerEventHandler('click', {});
 
     expect(mockDocument.body.classList.contains('theme-dark')).toBe(true);
+  });
+
+  it('should preserve the print section root element attributes (e.g. style)', () => {
+    const body = {
+      className: '',
+      classList: { contains: () => false },
+      innerHTML: '',
+      appendChild: vi.fn(),
+    };
+    const mockDocument = {
+      body,
+      open: vi.fn(),
+      close: vi.fn(),
+      head: { appendChild: vi.fn(), innerHTML: '' },
+      appendChild: vi.fn(),
+      createElement: (tag: string) => (tag === 'body' ? body : { innerHTML: '', appendChild: vi.fn(), textContent: '' }),
+    };
+    const mockWindow = {
+      document: mockDocument,
+      closed: true,
+      addEventListener: vi.fn(),
+    };
+    vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
+
+    buttonEl.triggerEventHandler('click', {});
+
+    // The print section's own id and inline style must survive (not just its children's).
+    expect(mockDocument.body.innerHTML).toContain('id="print-section"');
+    expect(mockDocument.body.innerHTML).toContain('border: 2px solid red');
   });
 
   it('should emit printComplete when printing finishes', () => {
