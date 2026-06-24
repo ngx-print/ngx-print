@@ -10,7 +10,7 @@ const testNonce = 'dummy-nonce-value';
 
 @Component({
   template: `
-    <div id="print-section">
+    <div id="print-section" style="border: 2px solid red;">
       <h1>Welcome to ngx-print</h1>
       <img
         width="300"
@@ -182,6 +182,59 @@ describe('NgxPrintService', () => {
 
     // Ensure the print styles are correctly formatted in the document
     expect(service.returnStyleValues()).toEqual('<style nonce="' + testNonce + '"> h2{border:solid 1px} h1{color:red;border:1px solid} </style>');
+  });
+
+  it('should preserve quotes and commas within style values', () => {
+    service.printStyle = {
+      'li::before': { content: '"→"' },
+      'p': { 'font-family': '"Helvetica Neue", Arial, sans-serif', color: 'red' },
+    };
+
+    expect(service.returnStyleValues()).toEqual(
+      '<style nonce="' + testNonce + '"> li::before{content:"→"} p{font-family:"Helvetica Neue", Arial, sans-serif;color:red} </style>',
+    );
+  });
+
+  it('should accept a raw CSS string for printStyle', () => {
+    service.printStyle = 'h1, h2 { color: red; }';
+
+    expect(service.returnStyleValues()).toEqual('<style nonce="' + testNonce + '"> h1, h2 { color: red; } </style>');
+  });
+
+  it('should clear the style when printStyle is set to an empty string', () => {
+    service.printStyle = 'h1 { color: red; }';
+    service.printStyle = '';
+
+    expect(service.returnStyleValues()).toEqual('<style nonce="' + testNonce + '">  </style>');
+  });
+
+  it('should preserve the print section root element attributes (e.g. style)', () => {
+    const body = {
+      className: '',
+      classList: { contains: () => false },
+      innerHTML: '',
+      appendChild: vi.fn(),
+    };
+    const mockDocument = {
+      body,
+      open: vi.fn(),
+      close: vi.fn(),
+      head: { appendChild: vi.fn(), innerHTML: '' },
+      appendChild: vi.fn(),
+      createElement: (tag: string) => (tag === 'body' ? body : { innerHTML: '', appendChild: vi.fn(), textContent: '' }),
+    };
+    const mockWindow = {
+      document: mockDocument,
+      closed: true,
+      addEventListener: vi.fn(),
+    };
+    vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
+
+    component.printMe(new PrintOptions({ printSectionId: 'print-section' }));
+
+    // The print section's own id and inline style must survive (not just its children's).
+    expect(mockDocument.body.innerHTML).toContain('id="print-section"');
+    expect(mockDocument.body.innerHTML).toContain('border: 2px solid red');
   });
 
   it('should emit on print completion (void)', () => {
