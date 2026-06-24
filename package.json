@@ -1,6 +1,6 @@
 {
   "name": "ngx-print",
-  "version": "22.0.0",
+  "version": "22.1.0",
   "description": "Plug n' Play Angular directive to print your stuff",
   "author": "https://github.com/ngx-print/ngx-print/graphs/contributors",
   "repository": {
@@ -52,7 +52,7 @@
     "ng-packagr": "^22.0.0",
     "prettier": "^3.8.4",
     "typescript": "~6.0.3",
-    "typescript-eslint": "8.61.1",
+    "typescript-eslint": "8.62.0",
     "vitest": "^4.0.8"
   },
   "peerDependencies": {
