@@ -8,10 +8,13 @@ updates:
       time: '10:00'
       timezone: 'America/New_York'
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 4
     groups:
-      npm-dependencies:
-        patterns:
-          - '*'
+      npm-patch-updates:
+        update-types: ['patch']
+      npm-minor-updates:
+        update-types: ['minor']
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-major']
