@@ -88,6 +88,13 @@ export class PrintExampleComponent {}
         ngxPrint>print</button>
 ```
 
+  `printTitle` also drives the filename browsers suggest when the user chooses "Save as PDF" from
+  the print dialog. For `printMethod="window"`/`"tab"` this happens naturally since the popup/tab
+  is its own top-level document. For `printMethod="iframe"`, ngx-print briefly swaps the host
+  page's `document.title` to `printTitle` around the print call (restoring it once printing
+  finishes) since browsers base that suggested filename on the host page's title rather than the
+  hidden iframe's.
+
 - Customize the printing stylesheet (CSS) by adding styles to `printStyle`:
 
 ```html
@@ -239,9 +246,9 @@ printDelay: number = 0;
 ```
 
 | Property         | Type                            | Default    | Description                                                                  |
-| ---------------- | ------------------------------- | ---------- | ---------------------------------------------------------------------------- |
+| ---------------- | ------------------------------- | ---------- |------------------------------------------------------------------------------|
 | `printSectionId` | `string`                        | `''`       | **Required.** The `id` of the element to print.                              |
-| `printTitle`     | `string`                        | `''`       | Title shown in the print document.                                           |
+| `printTitle`     | `string`                        | `''`       | Title shown in the print document; also the suggested Save-as-PDF filename.  |
 | `useExistingCss` | `boolean`                       | `false`    | Copies `<style>` and `<link>` tags from the host page.                       |
 | `bodyClass`      | `string`                        | `''`       | CSS class(es) applied to the print `<body>`.                                 |
 | `printMethod`    | `'window' \| 'tab' \| 'iframe'` | `'window'` | Controls how printing is triggered: popup window, new tab, or silent iframe. |
