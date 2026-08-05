@@ -310,18 +310,28 @@ export class PrintBase {
         if (printOptions.previewOnly) {
           return;
         }
-        printWindow.focus();
-        printWindow.print();
 
+        // Browsers derive the suggested "Save as PDF" filename from the host page's
+        // document.title, not the iframe's own <title> (unlike window/tab printing, where the popup/tab is itself the top-level context).
+        // Swap it temporarily so printTitle is used as the suggested filename here too, restoring it once printing is done.
+        const originalTitle = this.document.title;
+        if (printOptions.printTitle) {
+          this.document.title = printOptions.printTitle;
+        }
+
+        // Registered BEFORE print() is called: window.print() blocks script execution
         const mediaQueryList = printWindow.matchMedia('print');
         const listener = (mql: MediaQueryListEvent) => {
           if (!mql.matches) {
+            this.document.title = originalTitle;
             this.notifyPrintComplete();
             mediaQueryList.removeEventListener('change', listener);
           }
         };
-
         mediaQueryList.addEventListener('change', listener);
+
+        printWindow.focus();
+        printWindow.print();
       }, printOptions.printDelay || 0);
     };
   }

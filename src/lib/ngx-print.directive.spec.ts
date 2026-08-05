@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Component, DebugElement, provideZonelessChangeDetection, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -36,12 +36,22 @@ import { PrintStyle, PrintStyleInput } from './ngx-print.base';
         </tr>
       </table>
     </div>
-    <button [printStyle]="printStyle()" printSectionId="print-section" ngxPrint bodyClass="theme-dark">Print</button>
+    <button
+      [printStyle]="printStyle()"
+      [printMethod]="printMethod()"
+      [printTitle]="printTitle()"
+      printSectionId="print-section"
+      ngxPrint
+      bodyClass="theme-dark">
+      Print
+    </button>
   `,
   imports: [NgxPrintDirective],
 })
 class TestNgxPrintComponent {
   readonly printStyle = signal<PrintStyleInput>({});
+  readonly printMethod = signal<'window' | 'tab' | 'iframe'>('window');
+  readonly printTitle = signal('');
 }
 
 describe('NgxPrintDirective', () => {
@@ -72,6 +82,10 @@ describe('NgxPrintDirective', () => {
     buttonEl = fixture.debugElement.query(By.directive(NgxPrintDirective));
 
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('should create an instance', () => {
@@ -117,7 +131,7 @@ describe('NgxPrintDirective', () => {
     buttonEl.triggerEventHandler('click', {});
 
     expect(directive.returnStyleValues()).toEqual(
-      '<style> li::before{content:"→"} p{font-family:"Helvetica Neue", Arial, sans-serif;color:red} </style>',
+      '<style> li::before{content:"→"} p{font-family:"Helvetica Neue", Arial, sans-serif;color:red} </style>'
     );
   });
 
@@ -228,5 +242,70 @@ describe('NgxPrintDirective', () => {
       buttonEl.triggerEventHandler('click', null);
       vi.advanceTimersByTime(600);
     });
+  });
+
+  it('should swap the host document title to printTitle during iframe printing and restore it afterward', () => {
+    vi.useFakeTimers();
+    component.printMethod.set('iframe');
+    component.printTitle.set('My PDF Filename');
+    fixture.detectChanges();
+
+    document.title = 'Original App Title';
+
+    const iframeHead = { appendChild: vi.fn(), innerHTML: '' };
+    const iframeBody = { appendChild: vi.fn(), innerHTML: '', className: '' };
+    const iframeHtml = { appendChild: vi.fn() };
+    const iframeDocument = {
+      open: vi.fn(),
+      close: vi.fn(),
+      appendChild: vi.fn(),
+      getElementsByTagName: () => [],
+      createElement: (tag: string) => {
+        if (tag === 'head') return iframeHead;
+        if (tag === 'body') return iframeBody;
+        if (tag === 'html') return iframeHtml;
+        return { innerHTML: '', appendChild: vi.fn(), textContent: '' };
+      },
+    };
+
+    const iframeMediaQueryList = { matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() };
+    const iframeWindow = {
+      focus: vi.fn(),
+      print: vi.fn(),
+      matchMedia: vi.fn().mockReturnValue(iframeMediaQueryList),
+    };
+
+    const fakeIframe: Record<string, unknown> = {
+      style: {},
+      contentDocument: iframeDocument,
+      contentWindow: iframeWindow,
+    };
+
+    const realCreateElement = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation(
+      tag => (tag === 'iframe' ? (fakeIframe as unknown as HTMLIFrameElement) : realCreateElement(tag)) as HTMLElement
+    );
+    vi.spyOn(document.body, 'appendChild').mockImplementation(node => node);
+    vi.spyOn(document.body, 'removeChild').mockImplementation(node => node);
+
+    buttonEl.triggerEventHandler('click', {});
+
+    // Simulate the hidden iframe finishing its (about:blank) navigation.
+    (fakeIframe['onload'] as () => void)();
+    vi.advanceTimersByTime(0);
+
+    // The matchMedia listener must be registered before print() is called, since
+    // window.print() blocks script execution until the dialog is dismissed.
+    expect(iframeMediaQueryList.addEventListener.mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(iframeWindow.print).mock.invocationCallOrder[0]);
+    expect(iframeWindow.print).toHaveBeenCalled();
+    expect(document.title).toBe('My PDF Filename');
+
+    const changeListenerCall = iframeMediaQueryList.addEventListener.mock.calls.find(([event]) => event === 'change');
+    expect(changeListenerCall).toBeTruthy();
+    changeListenerCall![1]({ matches: false } as MediaQueryListEvent);
+
+    expect(document.title).toBe('Original App Title');
+
+    vi.useRealTimers();
   });
 });
