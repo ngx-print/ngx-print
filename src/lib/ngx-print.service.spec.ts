@@ -273,4 +273,49 @@ describe('NgxPrintService', () => {
       vi.advanceTimersByTime(600);
     });
   });
+
+  it('should log an error when the popup window is blocked', () => {
+    vi.spyOn(window, 'open').mockReturnValue(null);
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const customPrintOptions: PrintOptions = new PrintOptions({
+      printSectionId: 'print-section',
+    });
+    component.printMe(customPrintOptions);
+
+    expect(consoleSpy).toHaveBeenCalledWith('Could not open print window.');
+    vi.restoreAllMocks();
+  });
+
+  it('should log an error when the print section is missing', () => {
+    const body = {
+      className: '',
+      classList: { contains: () => false },
+      innerHTML: '',
+      appendChild: vi.fn(),
+    };
+    const mockDocument = {
+      body,
+      open: vi.fn(),
+      close: vi.fn(),
+      head: { appendChild: vi.fn(), innerHTML: '' },
+      appendChild: vi.fn(),
+      createElement: (tag: string) => (tag === 'body' ? body : { innerHTML: '', appendChild: vi.fn(), textContent: '' }),
+    };
+    const mockWindow = {
+      document: mockDocument,
+      closed: true,
+      addEventListener: vi.fn(),
+    };
+    vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const customPrintOptions: PrintOptions = new PrintOptions({
+      printSectionId: 'missing-section',
+    });
+
+    expect(() => component.printMe(customPrintOptions)).not.toThrow();
+    expect(consoleSpy).toHaveBeenCalledWith('Print section with id "missing-section" not found.');
+    vi.restoreAllMocks();
+  });
 });
