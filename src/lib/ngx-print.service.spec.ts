@@ -276,7 +276,7 @@ describe('NgxPrintService', () => {
 
   it('should log an error when the popup window is blocked', () => {
     vi.spyOn(window, 'open').mockReturnValue(null);
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'print-section',
@@ -308,7 +308,7 @@ describe('NgxPrintService', () => {
       addEventListener: vi.fn(),
     };
     vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     const customPrintOptions: PrintOptions = new PrintOptions({
       printSectionId: 'missing-section',
