@@ -9,6 +9,7 @@
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.spec.ts"],
   "angularCompilerOptions": {
+    "compilationMode": "full",
     "extendedDiagnostics": {
       "checks": {
         "nullishCoalescingNotNullable": "suppress",

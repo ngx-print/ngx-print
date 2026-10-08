@@ -27,6 +27,7 @@
     "build": "ng build ngx-print",
     "test": "ng test ngx-print --no-watch --coverage --no-progress",
     "serve:demo": "ng serve demo",
+    "build:demo": "ng build demo --base-href /ngx-print/",
     "lint": "ng lint"
   },
   "devDependencies": {
