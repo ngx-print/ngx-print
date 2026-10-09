@@ -1,0 +1,11 @@
+/*
+ * Example file for the styleSheetFile option. It is linked into the print document only.
+ * Linked files come before the copied page styles, hence !important.
+ */
+#print-section .doc-head {
+  border-bottom-color: #1f6feb !important;
+}
+
+#print-section h2 {
+  color: #1f6feb !important;
+}
