@@ -12,6 +12,25 @@ import { PrintOptions } from './print-options';
  */
 @Service()
 export class NgxPrintService extends PrintBase {
+  /**
+   * Emits every time a print job completes.
+   *
+   * @deprecated The RxJS-based API will be removed in the next major version.
+   * Use the Promise returned by {@link NgxPrintService.print} instead, which resolves when that print job completes:
+   *
+   * ```ts
+   * // Before
+   * this.printService.printComplete$.pipe(take(1)).subscribe(() => onDone());
+   * this.printService.print(options);
+   *
+   * // After
+   * await this.printService.print(options);
+   * onDone();
+   * // or: this.printService.print(options).then(() => onDone());
+   * ```
+   *
+   * If you still need an Observable, wrap the Promise yourself: `from(this.printService.print(options))`.
+   */
   printComplete$ = this.printComplete.asObservable();
 
   /**
@@ -19,11 +38,13 @@ export class NgxPrintService extends PrintBase {
    *
    * @param {PrintOptions} printOptions - Options for configuring the printing process.
    * @memberof NgxPrintService
-   * @returns {void}
+   * @returns {Promise<void>} Resolves once this print job completes (the print dialog / window was closed).
+   * It cannot tell whether the user printed or cancelled, and it never settles if printing
+   * could not be started (e.g. blocked popup, missing print section).
    */
-  public override print(printOptions?: Partial<PrintOptions>): void {
+  public override print(printOptions?: Partial<PrintOptions>): Promise<void> {
     // Call the print method in the parent class
-    super.print(printOptions);
+    return super.print(printOptions);
   }
 
   /**

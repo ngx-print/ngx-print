@@ -274,6 +274,39 @@ describe('NgxPrintService', () => {
     });
   });
 
+  it('should resolve the promise returned by print() on print completion', async () => {
+    vi.useFakeTimers();
+    const body = {
+      className: '',
+      classList: { contains: () => false },
+      innerHTML: '',
+      appendChild: vi.fn(),
+    };
+    const mockDocument = {
+      body,
+      open: vi.fn(),
+      close: vi.fn(),
+      head: { appendChild: vi.fn(), innerHTML: '' },
+      appendChild: vi.fn(),
+      createElement: (tag: string) => (tag === 'body' ? body : { innerHTML: '', appendChild: vi.fn(), textContent: '' }),
+    };
+    const mockWindow = {
+      document: mockDocument,
+      closed: true,
+      addEventListener: vi.fn(),
+    };
+    vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
+
+    const onComplete = vi.fn();
+    const printed = service.print({ printSectionId: 'print-section' }).then(onComplete);
+
+    await vi.advanceTimersByTimeAsync(600);
+    await printed;
+    vi.useRealTimers();
+
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
   it('should log an error when the popup window is blocked', () => {
     vi.spyOn(window, 'open').mockReturnValue(null);
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);

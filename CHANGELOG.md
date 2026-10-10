@@ -1,3 +1,13 @@
+# Unreleased
+
+### New features
+
+- `NgxPrintService.print()` now returns a `Promise<void>` that resolves when that print job completes.
+
+### Deprecations
+
+- `NgxPrintService.printComplete$` (RxJS) is deprecated and will be removed in the next major version. Await the Promise returned by `print()` instead.
+
 # 22.0.0 (2026-06-22)
 
 - Support for Angular 22.
