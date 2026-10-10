@@ -1,83 +1,219 @@
-<h1>Print Library Demo</h1>
+<header class="container header">
+  <h1>ngx-print</h1>
+  <p>
+    Print a section of your Angular app, including form values and canvases.
+    <a href="https://github.com/ngx-print/ngx-print#readme">Docs</a>
+    ·
+    <a href="https://github.com/ngx-print/ngx-print">GitHub</a>
+    ·
+    <a href="https://www.npmjs.com/package/ngx-print">npm</a>
+  </p>
+  <pre class="install"><code>npm install ngx-print</code></pre>
+</header>
 
-<p>
-  Fill out the form and draw on the canvas below, then click print.
-  The library will capture the current state of all fields and the canvas.
-</p>
-
-<form class="option-form" [formGroup]="optionForm">
-  <fieldset>
-    <legend>Print options:</legend>
-    <div class="form-group">
-      @for (method of printMethods; track method) {
-        <div>
+<main class="container layout">
+  <aside class="options" aria-label="Print options">
+    <fieldset class="field">
+      <legend class="field-name">printMethod</legend>
+      <div class="segmented">
+        @for (method of methods; track method) {
           <label>
-            <input [formControlName]="'printMethod'"
-                   [value]="method"
-                   type="radio"
-                   id="print-method-{{ $index }}"
-                   name="printMethod"
-            />
+            <input type="radio" name="printMethod" [value]="method" [checked]="printMethod() === method" (change)="setMethod(method)" />
             {{ method }}
           </label>
+        }
+      </div>
+    </fieldset>
+
+    <label class="field">
+      <span class="field-name">printTitle</span>
+      <input type="text" [value]="printTitle()" (input)="printTitle.set(text($event))" />
+    </label>
+
+    <label class="field">
+      <span class="field-name">bodyClass</span>
+      <input type="text" [value]="bodyClass()" (input)="bodyClass.set(text($event))" placeholder="e.g. print-compact" />
+    </label>
+
+    <label class="check">
+      <input type="checkbox" [checked]="useExistingCss()" (change)="useExistingCss.set(checked($event))" />
+      <span class="field-name">useExistingCss</span>
+    </label>
+
+    <label class="field">
+      <span class="field-name">printStyle</span>
+      <textarea rows="3" spellcheck="false" [value]="printStyle()" (input)="printStyle.set(text($event))"></textarea>
+      <span class="hint">
+        Inserted before the copied page styles, so rules may need
+        <code>!important</code>
+        to win
+      </span>
+    </label>
+
+    <label class="field">
+      <span class="field-name">styleSheetFile</span>
+      <input type="text" [value]="styleSheetFile()" (input)="styleSheetFile.set(text($event))" placeholder="e.g. print-theme.css" />
+    </label>
+
+    <label class="check" [class.disabled]="isIframe()">
+      <input type="checkbox" [checked]="previewOnly()" [disabled]="isIframe()" (change)="previewOnly.set(checked($event))" />
+      <span class="field-name">previewOnly</span>
+    </label>
+
+    <label class="check" [class.disabled]="isIframe()">
+      <input type="checkbox" [checked]="closeWindow()" [disabled]="isIframe()" (change)="closeWindow.set(checked($event))" />
+      <span class="field-name">closeWindow</span>
+    </label>
+    @if (isIframe()) {
+      <span class="hint">previewOnly and closeWindow only apply to window and tab.</span>
+    }
+
+    <label class="field">
+      <span class="field-name">printDelay (ms)</span>
+      <input type="number" min="0" step="100" [value]="printDelay()" (input)="printDelay.set(num($event))" />
+    </label>
+  </aside>
+
+  <div class="stage">
+    <div class="stage-bar">
+      <button
+        type="button"
+        class="btn"
+        ngxPrint
+        [printSectionId]="sectionId"
+        [printMethod]="printMethod()"
+        [printTitle]="printTitle()"
+        [useExistingCss]="useExistingCss()"
+        [bodyClass]="bodyClass()"
+        [printStyle]="printStyle()"
+        [styleSheetFile]="styleSheetFile()"
+        [previewOnly]="previewOnly()"
+        [closeWindow]="closeWindow()"
+        [printDelay]="printDelay()"
+        (printCompleted)="lastCompleted.set(now())">
+        Print
+      </button>
+      <span class="hint">
+        @if (lastCompleted(); as time) {
+          printCompleted emitted at {{ time | date: 'HH:mm:ss' }}
+        } @else {
+          Edit the fields or draw on the canvas, then print.
+        }
+      </span>
+    </div>
+
+    <!-- The section that gets printed -->
+    <article [id]="sectionId" class="paper">
+      <header class="doc-head">
+        <div>
+          <strong>Inkwell Office Supply</strong>
+          <div class="doc-muted">12 Paper Lane · 1010 Vienna</div>
         </div>
-      }
-    </div>
+        <div class="doc-meta">
+          <h2>Invoice</h2>
+          <div class="doc-muted">INV-2026-0142 · {{ today | date: 'mediumDate' }}</div>
+        </div>
+      </header>
 
-      <div class="form-group">
-        <label for="fullName">printTitle</label>
-        <input id="fullName" type="text" formControlName="printTitle" />
+      <div class="doc-grid">
+        <label class="doc-field">
+          <span>Customer</span>
+          <input type="text" value="Ada Lovelace" />
+        </label>
+        <label class="doc-field">
+          <span>Country</span>
+          <select>
+            <option>Austria</option>
+            <option selected>United Kingdom</option>
+            <option>Japan</option>
+          </select>
+        </label>
+        <fieldset class="doc-field">
+          <legend>Delivery</legend>
+          <div class="doc-inline">
+            <label>
+              <input type="radio" name="delivery" checked />
+              Standard
+            </label>
+            <label>
+              <input type="radio" name="delivery" />
+              Express
+            </label>
+          </div>
+        </fieldset>
+        <label class="doc-field doc-check">
+          <input type="checkbox" checked />
+          Paid by bank transfer
+        </label>
       </div>
 
-    <div class="form-group">
-      <label>Checkbox (Input)</label>
-      <div>
-        <input type="checkbox" id="agree" formControlName="useExistingCss" />
-        <label for="agree" style="display:inline;">useExistingCss</label>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th class="num">Price</th>
+            <th class="num">Qty</th>
+            <th class="num">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of items(); track item.description; let i = $index) {
+            <tr>
+              <td>{{ item.description }}</td>
+              <td class="num">{{ item.price | currency: 'EUR' }}</td>
+              <td class="num">
+                <input
+                  class="qty"
+                  type="number"
+                  min="0"
+                  [value]="item.qty"
+                  (input)="setQty(i, $event)"
+                  [attr.aria-label]="'Quantity ' + item.description" />
+              </td>
+              <td class="num">{{ item.price * item.qty | currency: 'EUR' }}</td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3">Total</td>
+            <td class="num">{{ total() | currency: 'EUR' }}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <label class="doc-field">
+        <span>Notes</span>
+        <textarea rows="2">Please leave the parcel at the front desk.</textarea>
+      </label>
+
+      <div class="doc-signature">
+        <canvas
+          #signature
+          width="360"
+          height="100"
+          aria-label="Signature pad"
+          (pointerdown)="startDrawing($event)"
+          (pointermove)="draw($event)"
+          (pointerup)="stopDrawing()"
+          (pointercancel)="stopDrawing()"></canvas>
+        <span>Signature</span>
       </div>
-    </div>
-  </fieldset>
-</form>
 
-<button type="button" (click)="onPrint()">Print Section</button>
+      <p class="doc-muted">Åå · Ελληνικά · ひらがな · 你好 · 안녕하세요 · العربية</p>
+      <p class="print-only">This line is hidden on screen and shown in the print by printStyle.</p>
+    </article>
 
-<!-- This is the section targeted by the ID -->
-<div id="print-demo-section" class="print-container">
-  <h3>printable-section</h3>
-
-  <form [formGroup]="demoform">
-    <div class="form-group">
-      <label for="fullName">Full Name (Input)</label>
-      <input id="fullName" type="text" formControlName="name" placeholder="Enter your name" />
-    </div>
-
-    <div class="form-group">
-      <label for="role">Role (Select)</label>
-      <select id="role" formControlName="role">
-        <option value="developer">Developer</option>
-        <option value="designer">Designer</option>
-        <option value="manager">Manager</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="bio">Biography (Textarea)</label>
-      <textarea id="bio" formControlName="bio" rows="4"></textarea>
-    </div>
-
-    <div class="form-group">
-      <label>Checkbox (Input)</label>
-      <div>
-        <input type="checkbox" id="agree" formControlName="agree" />
-        <label for="agree" style="display:inline;">I agree to the terms</label>
+    <div class="code">
+      <div class="code-head">
+        <div class="tabs" role="tablist">
+          <button type="button" role="tab" [attr.aria-selected]="codeTab() === 'directive'" (click)="codeTab.set('directive')">Directive</button>
+          <button type="button" role="tab" [attr.aria-selected]="codeTab() === 'service'" (click)="codeTab.set('service')">Service</button>
+        </div>
+        @let code = codeTab() === 'directive' ? directiveCode() : serviceCode();
+        <button type="button" class="link" (click)="copy(code)">{{ copied() ? 'Copied' : 'Copy' }}</button>
       </div>
+      <pre><code>{{ code }}</code></pre>
     </div>
-  </form>
-
-  <div class="form-group">
-    <label>Signature / Drawing (Canvas)</label>
-    <canvas #drawingCanvas width="400" height="150"></canvas>
   </div>
-
-  <p>Swedish: Åå, Japanese: ひらがな, Chinese: 你好, Korean: 안녕하세요</p>
-</div>
+</main>
