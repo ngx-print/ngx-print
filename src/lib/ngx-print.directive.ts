@@ -1,7 +1,6 @@
 import { Directive, input, output } from '@angular/core';
 import { PrintBase, PrintStyleInput } from './ngx-print.base';
 import { PrintOptions } from './print-options';
-import { take } from 'rxjs';
 
 @Directive({
   selector: '[ngxPrint]',
@@ -48,13 +47,13 @@ export class NgxPrintDirective extends PrintBase {
 
   readonly printCompleted = output<void>();
 
-  public override print(): void {
+  public override print(): Promise<void> {
     // Inputs carry side effects on PrintBase's internal style state, so they're applied
     // synchronously here rather than via effect() (effects shouldn't propagate state).
     super.setPrintStyle(this.printStyle());
     super.setStyleSheetFile(this.styleSheetFile());
 
-    super.print({
+    const printed = super.print({
       printSectionId: this.printSectionId(),
       printTitle: this.printTitle(),
       useExistingCss: this.useExistingCss(),
@@ -65,8 +64,6 @@ export class NgxPrintDirective extends PrintBase {
       printDelay: this.printDelay(),
     });
 
-    this.printComplete.pipe(take(1)).subscribe(() => {
-      this.printCompleted.emit();
-    });
+    return printed.then(() => this.printCompleted.emit());
   }
 }
