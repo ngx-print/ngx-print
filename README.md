@@ -269,13 +269,18 @@ this.printService.printStyle = 'h1, h2 { color: red; }';
 this.printService.styleSheetFile = fileLocation;
 ```
 
-### Subscribing to the print event
+### Waiting for the print to complete
+
+`print()` returns a Promise that resolves once that print job completes. As with the directive's `printCompleted` event, it is impossible to tell whether the user printed or cancelled.
 
 ```ts
-this.printService.printComplete$.pipe(take(1)).subscribe(() => {
+async printMe(): Promise<void> {
+  await this.printService.print({ printSectionId: 'print-section' });
   console.log('Print completed!');
-});
+}
 ```
+
+> **Deprecated:** `printComplete$` (RxJS Observable) still works but will be removed in the next major version. To migrate, await the Promise returned by `print()` instead (see above). If you still need an Observable, wrap it: `from(this.printService.print(options))`.
 
 ## Content-Security-Policy (CSP) Support
 

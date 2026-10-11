@@ -210,26 +210,31 @@ export class PrintBase {
 
   //#endregion
 
-  protected notifyPrintComplete() {
-    this.printComplete.next();
-  }
 
   /**
    * Prints the specified content using the provided print options.
    *
    * @public
    * @param printOptionInput - Options for printing.
+   * @returns a Promise that resolves once this print job completes (the print dialog / window was closed).
+   * It never settles if printing could not be started, or with `previewOnly` in iframe mode.
    */
-  protected print(printOptionInput?: Partial<PrintOptions>): void {
+  protected print(printOptionInput?: Partial<PrintOptions>): Promise<void> {
     const printOptions = new PrintOptions(printOptionInput);
-    if (printOptions.printMethod === 'iframe') {
-      this.printWithIframe(printOptions);
-    } else {
-      this.printWithWindow(printOptions);
-    }
+    return new Promise<void>(resolve => {
+      const onComplete = () => {
+        this.printComplete.next(); // legacy
+        resolve();
+      };
+      if (printOptions.printMethod === 'iframe') {
+        this.printWithIframe(printOptions, onComplete);
+      } else {
+        this.printWithWindow(printOptions, onComplete);
+      }
+    });
   }
 
-  protected printWithWindow(printOptions: PrintOptions) {
+  protected printWithWindow(printOptions: PrintOptions, onComplete: () => void) {
     // If the openNewTab option is set to true, then set the popOut option to an empty string
     // This will cause the print dialog to open in a new tab.
     const popOut = printOptions.printMethod === 'tab' ? '' : 'top=0,left=0,height=auto,width=auto';
@@ -252,7 +257,7 @@ export class PrintBase {
     const checkClosedInterval = setInterval(() => {
       if (popupWin.closed) {
         clearInterval(checkClosedInterval);
-        this.notifyPrintComplete();
+        onComplete();
       }
     }, 500);
 
@@ -266,7 +271,7 @@ export class PrintBase {
     });
   }
 
-  private printWithIframe(printOptions: PrintOptions): void {
+  private printWithIframe(printOptions: PrintOptions, onComplete: () => void): void {
     if (this._iframeElement) {
       this._iframeElement.remove();
     }
@@ -324,7 +329,7 @@ export class PrintBase {
         const listener = (mql: MediaQueryListEvent) => {
           if (!mql.matches) {
             this.document.title = originalTitle;
-            this.notifyPrintComplete();
+            onComplete();
             mediaQueryList.removeEventListener('change', listener);
           }
         };

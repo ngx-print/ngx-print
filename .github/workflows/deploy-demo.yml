@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.repository == 'ngx-print/ngx-print'
     runs-on: ubuntu-latest
 
     steps:
