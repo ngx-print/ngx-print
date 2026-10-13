@@ -1,30 +1,81 @@
-# Unreleased
+# 22.2.0 (2026-10-11)
 
 ### New features
 
 - `NgxPrintService.print()` now returns a `Promise<void>` that resolves when that print job completes.
+- `printTitle` now applies to iframe printing: the host document title is swapped while printing so the browser's suggested PDF filename matches.
 
 ### Deprecations
 
 - `NgxPrintService.printComplete$` (RxJS) is deprecated and will be removed in the next major version. Await the Promise returned by `print()` instead.
 
+### Maintenance
+
+- Demo app is now deployed to GitHub Pages as a live demo.
+
+# 22.1.1 (2026-06-24)
+
+### New features
+
+- `printStyle` now also accepts a raw CSS string.
+
+### Bug fixes
+
+- Quotes and commas in `printStyle` CSS values are preserved.
+- Attributes on the print section's root element (e.g. `id`, `style`) are preserved.
+- Fixed the package build and deployment.
+
+# 22.1.0 (2026-06-24)
+
+### Maintenance
+
+- Directive inputs migrated to Angular signal `input()`s.
+
 # 22.0.0 (2026-06-22)
 
+### New features
+
 - Support for Angular 22.
+
+### Maintenance
+
+- Unit tests migrated from Karma/Jasmine to Vitest.
+- README API documentation updated.
+- Updated npm dependencies.
+
+# 21.2.0 (2026-02-16)
+
+### New features
+
+- `print()` accepts a `Partial<PrintOptions>`, so only the options you want to change need to be passed.
+- Added a demo app (`projects/demo`) with configurable print options.
+
+### Bug fixes
+
+- `DOCUMENT` is injected instead of using the global `document`, for SSR compatibility.
+- Fixed copying of canvas elements into the print document.
+- Fixed syncing of form values and refined style/script injection.
+
+### Maintenance
+
+- Replaced `@HostListener` with the `host` configuration for the click handler.
+- Updated npm dependencies.
 
 # 21.1.0 (2026-01-07)
 
 ### New features
 
-- iFrame printing
+- iFrame printing.
+
+### Bug fixes
+
+- Fixed a null pointer on `defaultSelected`.
+
+# 21.0.0 (2025-12-10)
 
 ### New features
 
 - Support for Angular 21.
-
-### Bug fixes
-
-- nullpointer defaultSelected
 
 # 20.1.0 (2025-09-01)
 
@@ -47,6 +98,20 @@
 ### Maintenance
 
 - Implemented various feature requests and updated npm dependencies.
+
+# 3.2.0 (2025-06-23)
+
+### New features
+
+- Added a `printComplete` output on the directive and a `printComplete$` observable on the service, emitted when printing finishes.
+
+### Bug fixes
+
+- Fixed the print dialog not opening when a CSP nonce is set, by adding the nonce to the injected script (#196).
+
+### Maintenance
+
+- Added Dependabot and a stale-issue checker.
 
 # 3.1.0 (2025-06-12)
 

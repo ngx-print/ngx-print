@@ -15,6 +15,26 @@ export type PrintStyle = Record<string, Record<string, string>>;
  */
 export type PrintStyleInput = PrintStyle | string;
 
+/** Everything copied from the host document into the print document. */
+interface DocumentComponents {
+  styles: string;
+  links: string;
+  baseTag: string;
+  printContents: string | null;
+}
+
+/**
+ * A document to print into, plus the parts of printing that differ per print method.
+ * Completion detection is wired up by the factory that creates the target.
+ */
+interface PrintTarget {
+  doc: Document;
+  /** Runs `callback` once the written document has loaded. */
+  onLoad(callback: () => void): void;
+  /** Opens the print dialog. */
+  print(): void;
+}
+
 @Service()
 export class PrintBase {
   private document = inject(DOCUMENT);
@@ -210,7 +230,6 @@ export class PrintBase {
 
   //#endregion
 
-
   /**
    * Prints the specified content using the provided print options.
    *
@@ -226,34 +245,48 @@ export class PrintBase {
         this.printComplete.next(); // legacy
         resolve();
       };
-      if (printOptions.printMethod === 'iframe') {
-        this.printWithIframe(printOptions, onComplete);
-      } else {
-        this.printWithWindow(printOptions, onComplete);
+
+      // Collected before any window/iframe is created, so a missing section never leaves an empty popup behind.
+      const components = this.prepareDocumentComponents(printOptions);
+      if (!components.printContents) {
+        console.error(`Print section with id "${printOptions.printSectionId}" not found.`);
+        return;
+      }
+
+      const target = printOptions.printMethod === 'iframe' ? this.createIframeTarget(printOptions, onComplete) : this.createWindowTarget(printOptions, onComplete);
+      if (target) {
+        this.runPrint(target, printOptions, components);
       }
     });
   }
 
-  protected printWithWindow(printOptions: PrintOptions, onComplete: () => void) {
-    // If the openNewTab option is set to true, then set the popOut option to an empty string
-    // This will cause the print dialog to open in a new tab.
-    const popOut = printOptions.printMethod === 'tab' ? '' : 'top=0,left=0,height=auto,width=auto';
+  /**
+   * The steps shared by every print method: write the document, wait for it to load,
+   * then open the print dialog after `printDelay` (unless `previewOnly`).
+   */
+  private runPrint(target: PrintTarget, printOptions: PrintOptions, components: DocumentComponents): void {
+    target.doc.open();
+    this.buildPrintDocument(target.doc, printOptions, components);
+    target.doc.close();
 
+    target.onLoad(() => {
+      if (printOptions.previewOnly) return;
+      setTimeout(() => target.print(), printOptions.printDelay || 0);
+    });
+  }
+
+  private createWindowTarget(printOptions: PrintOptions, onComplete: () => void): PrintTarget | null {
+    // An empty features string makes the browser open a new tab instead of a popup window.
+    const popOut = printOptions.printMethod === 'tab' ? '' : 'top=0,left=0,height=auto,width=auto';
     const popupWin = window.open('', '_blank', popOut);
 
     if (!popupWin) {
       // the popup window could not be opened.
       console.error('Could not open print window.');
-      return;
+      return null;
     }
 
-    popupWin.document.open();
-    // Create the HTML structure
-    this.buildPrintDocument(popupWin.document, printOptions);
-
-    popupWin.document.close();
-
-    // Listen for the window closing
+    // Started right away (not when printing) so that closing a previewOnly window also completes.
     const checkClosedInterval = setInterval(() => {
       if (popupWin.closed) {
         clearInterval(checkClosedInterval);
@@ -261,20 +294,18 @@ export class PrintBase {
       }
     }, 500);
 
-    popupWin.addEventListener('load', () => {
-      if (!printOptions.previewOnly) {
-        setTimeout(() => {
-          popupWin.print();
-          if (printOptions.closeWindow) popupWin.close();
-        }, printOptions.printDelay || 0);
-      }
-    });
+    return {
+      doc: popupWin.document,
+      onLoad: callback => popupWin.addEventListener('load', callback),
+      print: () => {
+        popupWin.print();
+        if (printOptions.closeWindow) popupWin.close();
+      },
+    };
   }
 
-  private printWithIframe(printOptions: PrintOptions, onComplete: () => void): void {
-    if (this._iframeElement) {
-      this._iframeElement.remove();
-    }
+  private createIframeTarget(printOptions: PrintOptions, onComplete: () => void): PrintTarget | null {
+    this._iframeElement?.remove();
     this._iframeElement = this.document.createElement('iframe');
     const iframe = this._iframeElement;
     iframe.id = 'print-iframe-' + new Date().getTime();
@@ -287,35 +318,18 @@ export class PrintBase {
 
     this.document.body.appendChild(iframe);
 
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) {
+    const printWindow = iframe.contentWindow;
+    const iframeDoc = iframe.contentDocument || printWindow?.document;
+    if (!printWindow || !iframeDoc) {
       console.error('Could not access iframe document.');
-      this.document.body.removeChild(iframe);
-      return;
+      iframe.remove();
+      return null;
     }
 
-    iframeDoc.open();
-    const success = this.buildPrintDocument(iframeDoc, printOptions);
-    if (!success) {
-      iframeDoc.close();
-      this.document.body.removeChild(iframe);
-      return;
-    }
-    iframeDoc.close();
-
-    iframe.onload = () => {
-      const printWindow = iframe.contentWindow;
-      if (!printWindow) {
-        console.error('Could not access iframe window.');
-        this.document.body.removeChild(iframe);
-        return;
-      }
-
-      setTimeout(() => {
-        if (printOptions.previewOnly) {
-          return;
-        }
-
+    return {
+      doc: iframeDoc,
+      onLoad: callback => (iframe.onload = callback),
+      print: () => {
         // Browsers derive the suggested "Save as PDF" filename from the host page's
         // document.title, not the iframe's own <title> (unlike window/tab printing, where the popup/tab is itself the top-level context).
         // Swap it temporarily so printTitle is used as the suggested filename here too, restoring it once printing is done.
@@ -324,7 +338,8 @@ export class PrintBase {
           this.document.title = printOptions.printTitle;
         }
 
-        // Registered BEFORE print() is called: window.print() blocks script execution
+        // Registered BEFORE print() is called: window.print() blocks script execution.
+        // Registered only now (not at creation) so that printing the host page while a previewOnly iframe exists doesn't count as completion.
         const mediaQueryList = printWindow.matchMedia('print');
         const listener = (mql: MediaQueryListEvent) => {
           if (!mql.matches) {
@@ -337,11 +352,11 @@ export class PrintBase {
 
         printWindow.focus();
         printWindow.print();
-      }, printOptions.printDelay || 0);
+      },
     };
   }
 
-  private prepareDocumentComponents(printOptions: PrintOptions) {
+  private prepareDocumentComponents(printOptions: PrintOptions): DocumentComponents {
     let styles = '';
     let links = '';
     const baseTag = this.getElementTag('base');
@@ -356,14 +371,7 @@ export class PrintBase {
     return { styles, links, baseTag, printContents };
   }
 
-  private buildPrintDocument(doc: Document, printOptions: PrintOptions): boolean {
-    const components = this.prepareDocumentComponents(printOptions);
-
-    if (!components.printContents) {
-      console.error(`Print section with id "${printOptions.printSectionId}" not found.`);
-      return false;
-    }
-
+  private buildPrintDocument(doc: Document, printOptions: PrintOptions, components: DocumentComponents): void {
     const html = doc.createElement('html');
     const head = doc.createElement('head');
     const body = doc.createElement('body');
@@ -390,7 +398,5 @@ export class PrintBase {
     html.appendChild(head);
     html.appendChild(body);
     doc.appendChild(html);
-
-    return true;
   }
 }
